@@ -3,311 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>INTERGRASI MEDAN OPERASI</title>
+  <title>Script Hub</title>
+  <!-- Favicon as inline SVG data URI -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    
-    body {
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #0a0f1b 0%, #0f1420 50%, #0a0f1b 100%);
-      color: #e2e8f0;
-      min-height: 100vh;
-      overflow-x: hidden;
+    body { font-family: 'Fira Sans', sans-serif; background: #0a0f1a; }
+    .mono { font-family: 'Space Mono', monospace; }
+    .card-glow { transition: box-shadow 0.25s, transform 0.2s; }
+    .card-glow:hover { box-shadow: 0 0 28px rgba(0,255,200,0.25); transform: translateY(-4px); }
+    .grid-lines {
+      background-image: linear-gradient(rgba(0,255,200,0.04) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(0,255,200,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
     }
-    
-    .mono { font-family: 'IBM Plex Mono', monospace; }
-    
-    /* Background Grid */
-    .grid-bg {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: 
-        linear-gradient(rgba(0, 255, 200, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 255, 200, 0.03) 1px, transparent 1px);
-      background-size: 50px 50px;
-      pointer-events: none;
-      z-index: 1;
-    }
-    
-    .content-wrapper {
-      position: relative;
-      z-index: 10;
-    }
-    
-    /* Header */
-    header {
-      background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.85) 100%);
-      border-bottom: 1px solid rgba(0, 255, 200, 0.2);
-      backdrop-filter: blur(10px);
-      padding: 2rem 1.5rem;
-      margin-bottom: 3rem;
-    }
-    
-    .header-content {
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-    
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: rgba(0, 255, 200, 0.1);
-      border: 1px solid rgba(0, 255, 200, 0.3);
-      padding: 0.4rem 0.8rem;
-      border-radius: 6px;
-      margin-bottom: 1rem;
-    }
-    
-    .status-dot {
-      width: 6px;
-      height: 6px;
-      background: #00ffc8;
-      border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-      0%, 100% { opacity: 0.4; }
-      50% { opacity: 1; }
-    }
-    
-    .status-text {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.75rem;
-      color: #00ffc8;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-    
-    h1 {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 2.5rem;
-      font-weight: 700;
-      color: #00ffc8;
-      letter-spacing: 2px;
-      margin-bottom: 0.5rem;
-      text-shadow: 0 0 20px rgba(0, 255, 200, 0.2);
-    }
-    
-    .subtitle {
-      color: #94a3b8;
-      font-size: 0.95rem;
-      font-weight: 400;
-      letter-spacing: 0.5px;
-    }
-    
-    /* Main Container */
-    main {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 0 1.5rem 3rem;
-    }
-    
-    /* Cards Grid */
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
-    
-    @media (min-width: 768px) {
-      .cards-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-    
-    @media (min-width: 1024px) {
-      .cards-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
-    
-    /* Card Styling */
-    .card {
-      background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.6) 100%);
-      border: 1px solid rgba(0, 255, 200, 0.15);
-      border-radius: 12px;
-      padding: 1.5rem;
-      backdrop-filter: blur(10px);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(0, 255, 200, 0.1), transparent);
-      transition: left 0.5s;
-    }
-    
-    .card:hover::before {
-      left: 100%;
-    }
-    
-    .card:hover {
-      border-color: rgba(0, 255, 200, 0.4);
-      background: linear-gradient(135deg, rgba(30, 41, 59, 1) 0%, rgba(15, 23, 42, 0.8) 100%);
-      box-shadow: 0 0 30px rgba(0, 255, 200, 0.2), inset 0 0 20px rgba(0, 255, 200, 0.05);
-      transform: translateY(-6px);
-    }
-    
-    .card-image {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-      border: 1px solid rgba(0, 255, 200, 0.1);
-    }
-    
-    .card-header {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 1rem;
-    }
-    
-    .card-icon {
-      width: 20px;
-      height: 20px;
-      color: #00ffc8;
-    }
-    
-    .card-title {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #e2e8f0;
-      letter-spacing: 0.5px;
-    }
-    
-    .card-description {
-      color: #94a3b8;
-      font-size: 0.9rem;
-      line-height: 1.5;
-      margin-bottom: 1.5rem;
-      flex-grow: 1;
-    }
-    
-    .card-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: #00ffc8;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.85rem;
-      font-weight: 600;
-      text-decoration: none;
-      letter-spacing: 1px;
-      transition: all 0.3s;
-      position: relative;
-    }
-    
-    .card-link::after {
-      content: '→';
-      transition: transform 0.3s;
-    }
-    
-    .card-link:hover {
-      color: #ffffff;
-      transform: translateX(4px);
-    }
-    
-    .card-link:hover::after {
-      transform: translateX(4px);
-    }
-    
-    /* Clock Card */
-    .clock-card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 280px;
-    }
-    
-    .clock-container {
-      position: relative;
-      width: 140px;
-      height: 140px;
-      margin-bottom: 1.5rem;
-    }
-    
-    .clock-svg {
-      width: 100%;
-      height: 100%;
-      filter: drop-shadow(0 0 15px rgba(0, 255, 200, 0.2));
-    }
-    
-    .clock-label {
-      color: #94a3b8;
-      font-size: 0.85rem;
-      text-align: center;
-      letter-spacing: 0.5px;
-    }
-    
-    /* Footer */
-    footer {
-      border-top: 1px solid rgba(0, 255, 200, 0.15);
-      padding: 2rem 1.5rem;
-      text-align: center;
-      background: rgba(15, 23, 42, 0.5);
-      margin-top: 4rem;
-    }
-    
-    .footer-text {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.75rem;
-      color: #475569;
-      letter-spacing: 1px;
-    }
-    
-    /* Toast Notification */
+    .pulse-dot { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{ opacity:0.3; } 50%{ opacity:1; } }
+    .clock-ring { filter: drop-shadow(0 0 8px rgba(0,255,200,0.2)); }
+    /* Toast notification */
     .toast {
       position: fixed;
-      bottom: 2rem;
-      right: 2rem;
-      background: rgba(15, 23, 42, 0.95);
+      bottom: 20px;
+      right: 20px;
+      background: #0f172a;
       border: 1px solid #00ffc8;
-      padding: 1rem 1.5rem;
+      padding: 12px 20px;
       border-radius: 8px;
       color: #e2e8f0;
       z-index: 1000;
-      transform: translateY(120px);
+      transform: translateY(100px);
       opacity: 0;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.85rem;
+      transition: all 0.3s ease;
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
       max-width: 400px;
       word-wrap: break-word;
-      box-shadow: 0 0 20px rgba(0, 255, 200, 0.2);
     }
-    
     .toast.show {
       transform: translateY(0);
       opacity: 1;
     }
-    
+    /* Loading spinner */
     .spinner {
       display: inline-block;
-      width: 14px;
-      height: 14px;
+      width: 16px;
+      height: 16px;
       border: 2px solid #00ffc8;
       border-top-color: transparent;
       border-radius: 50%;
@@ -315,149 +57,132 @@
       margin-right: 8px;
       vertical-align: middle;
     }
-    
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
-    
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-      h1 {
-        font-size: 1.8rem;
-      }
-      
-      .cards-grid {
-        grid-template-columns: 1fr;
-      }
-      
-      header {
-        padding: 1.5rem 1rem;
-        margin-bottom: 2rem;
-      }
-    }
   </style>
 </head>
-<body>
-  <!-- Grid Background -->
-  <div class="grid-bg"></div>
-  
-  <!-- Toast -->
+<body class="min-h-screen grid-lines text-slate-200">
+
+  <!-- Toast notification -->
   <div id="toast" class="toast"></div>
-  
-  <div class="content-wrapper">
-    <!-- HEADER -->
-    <header>
-      <div class="header-content">
-        <div class="status-badge">
-          <span class="status-dot"></span>
-          <span class="status-text">Systems Online</span>
-        </div>
-        <h1>INTERGRASI_MEDAN_OPERASI://</h1>
-        <p class="subtitle">Design by Kursus PJK siri 17 2026 Cawangan Pengurusan Kejuruteraan dan Ketenteraan</p>
+
+  <!-- HEADER -->
+  <header class="border-b border-cyan-900/40 relative overflow-hidden">
+    <img class="absolute inset-0 w-full h-full object-cover opacity-30" loading="lazy" 
+         src="https://images.pexels.com/photos/10885044/pexels-photo-10885044.jpeg?auto=compress&cs=tinysrgb&w=1280" 
+         alt="patriotic backdrop">
+    <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-slate-950/60"></div>
+    <div class="max-w-6xl mx-auto px-6 py-8 relative z-10">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-3 h-3 rounded-full bg-emerald-400 pulse-dot"></div>
+        <span class="mono text-xs text-emerald-400 uppercase tracking-widest">systems online</span>
       </div>
-    </header>
+      <h1 class="mono text-3xl font-bold text-cyan-400" style="color: #00ffc8;">INTERGRASI_MEDAN_OPERASI://</h1>
+      <p class="mt-2 max-w-2xl text-slate-400 text-base">Design by Kursus PJK siri 17 2026 Cawangan Pengurusan Kejuruteraan dan Ketenteraan</p>
+    </div>
+  </header>
 
-    <!-- MAIN CONTENT -->
-    <main>
-      <div class="cards-grid">
-        
-        <!-- CARD 1: Atur gerak kembalik -->
-        <div class="card">
-          <img class="card-image" loading="lazy" 
-               src="https://images.pexels.com/photos/19772670/pexels-photo-19772670.jpeg?auto=compress&cs=tinysrgb&w=800" 
-               alt="recovery truck">
-          <div class="card-header">
-            <h3 class="card-title">Atur gerak kembalik</h3>
-          </div>
-          <p class="card-description">Automated recovery and movement control system for efficient operations.</p>
-          <a href="https://script.google.com/macros/s/AKfycbxC6VLoLdaC0gfh5y9oj6UjQtwQTNn3qjRlpMHNdXWaGO_6wOHge_CMeoh9OV-8aVpT/exec" 
-             target="_blank" rel="noopener noreferrer" class="card-link">LAUNCH</a>
+  <!-- MAIN CARDS -->
+  <main class="max-w-6xl mx-auto px-6 py-10">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      <!-- CARD 1: Atur gerak kembalik -->
+      <div class="card-glow rounded-xl p-6 border border-cyan-800/30 bg-slate-900/80 backdrop-blur-sm">
+        <img class="w-full h-32 object-contain mb-3 rounded-md" loading="lazy" 
+             src="https://images.pexels.com/photos/19772670/pexels-photo-19772670.jpeg?auto=compress&cs=tinysrgb&w=800" 
+             alt="recovery truck">
+        <div class="flex items-center gap-2 mb-3">
+          <h3 class="mono text-xl font-bold text-slate-200">Atur gerak kembalik</h3>
         </div>
-
-        <!-- CARD 2: Kumpulan Pembaikan Hadapan -->
-        <div class="card">
-          <img class="card-image" loading="lazy" 
-               src="https://images.pexels.com/photos/11452326/pexels-photo-11452326.jpeg?auto=compress&cs=tinysrgb&w=800" 
-               alt="soldiers">
-          <div class="card-header">
-            <h3 class="card-title">Kumpulan Pembaikan Hadapan</h3>
-          </div>
-          <p class="card-description">Coordinated deployment and tactical operations management system.</p>
-          <a href="https://script.google.com/macros/s/AKfycbwt_R_KI0AeNX4ykpT0gYWbCocmIjBvOcja4twu-aB7LMr7mbBnt1RSuZSsi0CET7lO/exec" 
-             target="_blank" rel="noopener noreferrer" class="card-link">LAUNCH</a>
-        </div>
-
-        <!-- CARD 3: Tactical Map -->
-        <div class="card">
-          <div class="card-header">
-            <i data-lucide="map-pin" class="card-icon"></i>
-            <h3 class="card-title">Tactical Map</h3>
-          </div>
-          <p class="card-description">Tactical mapping and strategic positioning system for operational planning.</p>
-          <a href="#" class="card-link" onclick="event.preventDefault(); launchModule('Tactical Map');">LAUNCH</a>
-        </div>
-
-        <!-- CARD 4: Round Watch (Clock) -->
-        <div class="card clock-card">
-          <div class="card-header" style="margin-bottom: 0.5rem; width: 100%; justify-content: center;">
-            <h3 class="card-title">Round Watch</h3>
-          </div>
-          <div class="clock-container">
-            <svg class="clock-svg" viewBox="0 0 100 100">
-              <!-- Outer ring -->
-              <circle cx="50" cy="50" r="48" fill="none" stroke="#1e293b" stroke-width="2"></circle>
-              <circle cx="50" cy="50" r="45" fill="none" stroke="#0f172a" stroke-width="1"></circle>
-              
-              <!-- Center dot -->
-              <circle cx="50" cy="50" r="3" fill="#00ffc8"></circle>
-              
-              <!-- Hour markers -->
-              <g stroke="#00ffc8" stroke-width="1.2" opacity="0.6">
-                <line x1="50" y1="6" x2="50" y2="12"></line>
-                <line x1="50" y1="88" x2="50" y2="94"></line>
-                <line x1="6" y1="50" x2="12" y2="50"></line>
-                <line x1="88" y1="50" x2="94" y2="50"></line>
-              </g>
-              
-              <!-- Clock hands -->
-              <line id="hour-hand" x1="50" y1="50" x2="50" y2="30" stroke="#00ffc8" stroke-width="2.5" stroke-linecap="round" style="transform-origin: 50px 50px; transition: transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);"></line>
-              <line id="minute-hand" x1="50" y1="50" x2="50" y2="18" stroke="#00ffc8" stroke-width="1.8" stroke-linecap="round" style="transform-origin: 50px 50px; transition: transform 0.05s linear;"></line>
-              <line id="second-hand" x1="50" y1="50" x2="50" y2="15" stroke="#10b981" stroke-width="1.2" stroke-linecap="round" style="transform-origin: 50px 50px; transition: transform 0.05s linear;"></line>
-            </svg>
-          </div>
-          <p class="clock-label">Live analog clock · real-time</p>
-        </div>
-
-        <!-- CARD 5: Report 1 -->
-        <div class="card">
-          <div class="card-header">
-            <i data-lucide="file-text" class="card-icon"></i>
-            <h3 class="card-title">Report 1</h3>
-          </div>
-          <p class="card-description">Operations report compilation and analysis with real-time data integration.</p>
-          <a href="https://docs.google.com/spreadsheets/d/1EQNUaYmT6-K5ks9dUiMLJTdoIFrasnLojApTHlbjmtM/edit?usp=sharing" 
-             target="_blank" rel="noopener noreferrer" class="card-link">LAUNCH</a>
-        </div>
-
-        <!-- CARD 6: Report 2 -->
-        <div class="card">
-          <div class="card-header">
-            <i data-lucide="file-text" class="card-icon"></i>
-            <h3 class="card-title">Report 2</h3>
-          </div>
-          <p class="card-description">Real-time operational status monitoring and performance metrics tracking.</p>
-          <a href="https://docs.google.com/spreadsheets/d/1vFHIC4fLUWDvUZQQBXG5oQyVtMPqYdXEOKsmw3f6Wy0/edit?usp=sharing" 
-             target="_blank" rel="noopener noreferrer" class="card-link">LAUNCH</a>
-        </div>
-
+        <p class="text-sm text-slate-400 mb-4">Automated recovery and movement control system for efficient operations.</p>
+        <a href="https://script.google.com/macros/s/AKfycbxC6VLoLdaC0gfh5y9oj6UjQtwQTNn3qjRlpMHNdXWaGO_6wOHge_CMeoh9OV-8aVpT/exec" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           class="mono text-cyan-400 inline-flex items-center gap-1 hover:underline">LAUNCH →</a>
       </div>
-    </main>
 
-    <!-- FOOTER -->
-    <footer>
-      <p class="footer-text">© 2026 INTERGRASI MEDAN OPERASI · All systems nominal</p>
-    </footer>
-  </div>
+      <!-- CARD 2: Kumpulan Pembaikan Hadapan -->
+      <div class="card-glow rounded-xl p-6 border border-cyan-800/30 bg-slate-900/80 backdrop-blur-sm">
+        <img class="w-full h-32 object-contain mb-3 rounded-md" loading="lazy" 
+             src="https://images.pexels.com/photos/11452326/pexels-photo-11452326.jpeg?auto=compress&cs=tinysrgb&w=800" 
+             alt="soldiers sunset">
+        <div class="flex items-center gap-2 mb-3">
+          <h3 class="mono text-xl font-bold text-slate-200">Kumpulan Pembaikan Hadapan</h3>
+        </div>
+        <p class="text-sm text-slate-400 mb-4">Coordinated deployment and tactical operations management system.</p>
+        <a href="https://script.google.com/macros/s/AKfycbwt_R_KI0AeNX4ykpT0gYWbCocmIjBvOcja4twu-aB7LMr7mbBnt1RSuZSsi0CET7lO/exec" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           class="mono text-cyan-400 inline-flex items-center gap-1 hover:underline">LAUNCH →</a>
+      </div>
+
+      <!-- CARD 3: Tactical Map -->
+      <div class="card-glow rounded-xl p-6 border border-cyan-800/30 bg-slate-900/80 backdrop-blur-sm">
+        <div class="flex items-center gap-2 mb-3">
+          <i data-lucide="map" class="w-5 h-5 text-emerald-400"></i>
+          <h3 class="mono text-xl font-bold text-slate-200">Tactical Map</h3>
+        </div>
+        <p class="text-sm text-slate-400 mb-4">Tactical mapping and strategic positioning system.</p>
+        <a href="#" class="mono text-cyan-400 inline-flex items-center gap-1 hover:underline" 
+           onclick="event.preventDefault(); launchModule('Tactical Map');">LAUNCH →</a>
+      </div>
+
+      <!-- CARD 4: Round Watch (Clock) -->
+      <div class="card-glow rounded-xl p-6 border border-cyan-800/30 bg-slate-900/80 backdrop-blur-sm flex flex-col items-center justify-center">
+        <h3 class="mono text-xl font-bold text-slate-200 mb-3">Round Watch</h3>
+        <svg class="w-24 h-24 mb-3 clock-ring" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="48" fill="none" stroke="#1e293b" stroke-width="2"></circle>
+          <circle cx="50" cy="50" r="45" fill="none" stroke="#0f172a" stroke-width="1"></circle>
+          <circle cx="50" cy="50" r="3" fill="#00ffc8"></circle>
+          <g stroke="#00ffc8" stroke-width="1.5" opacity="0.5">
+            <line x1="50" y1="6" x2="50" y2="12"></line>
+            <line x1="50" y1="88" x2="50" y2="94"></line>
+            <line x1="6" y1="50" x2="12" y2="50"></line>
+            <line x1="88" y1="50" x2="94" y2="50"></line>
+          </g>
+          <line id="hour-hand" x1="50" y1="50" x2="50" y2="30" stroke="#00ffc8" stroke-width="2.5" stroke-linecap="round" style="transform-origin: 50px 50px; transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);"></line>
+          <line id="minute-hand" x1="50" y1="50" x2="50" y2="18" stroke="#00ffc8" stroke-width="1.8" stroke-linecap="round" style="transform-origin: 50px 50px; transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);"></line>
+          <line id="second-hand" x1="50" y1="50" x2="50" y2="15" stroke="#10b981" stroke-width="1.2" stroke-linecap="round" style="transform-origin: 50px 50px; transition: transform 0.05s linear;"></line>
+        </svg>
+        <p class="text-sm text-slate-400 text-center">Live analog clock · real-time</p>
+      </div>
+
+      <!-- CARD 5: Report 1 -->
+      <div class="card-glow rounded-xl p-6 border border-cyan-800/30 bg-slate-900/80 backdrop-blur-sm">
+        <div class="flex items-center gap-2 mb-3">
+          <i data-lucide="file-text" class="w-5 h-5 text-emerald-400"></i>
+          <h3 class="mono text-xl font-bold text-slate-200">Report 1</h3>
+        </div>
+        <p class="text-sm text-slate-400 mb-4">Operations report compilation and analysis.</p>
+        <a href="https://docs.google.com/spreadsheets/d/1EQNUaYmT6-K5ks9dUiMLJTdoIFrasnLojApTHlbjmtM/edit?usp=sharing" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           class="mono text-cyan-400 inline-flex items-center gap-1 hover:underline">LAUNCH →</a>
+      </div>
+
+      <!-- CARD 6: Report 2 -->
+      <div class="card-glow rounded-xl p-6 border border-cyan-800/30 bg-slate-900/80 backdrop-blur-sm">
+        <div class="flex items-center gap-2 mb-3">
+          <i data-lucide="file-text" class="w-5 h-5 text-emerald-400"></i>
+          <h3 class="mono text-xl font-bold text-slate-200">Report 2</h3>
+        </div>
+        <p class="text-sm text-slate-400 mb-4">Real-time operational status monitoring.</p>
+        <a href="https://docs.google.com/spreadsheets/d/1vFHIC4fLUWDvUZQQBXG5oQyVtMPqYdXEOKsmw3f6Wy0/edit?usp=sharing" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           class="mono text-cyan-400 inline-flex items-center gap-1 hover:underline">LAUNCH →</a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-cyan-900/40 mt-10">
+    <div class="max-w-6xl mx-auto px-6 py-6">
+      <p class="mono text-xs text-center text-slate-500">© 2026 Script Hub · All systems nominal</p>
+    </div>
+  </footer>
 
   <!-- JavaScript -->
   <script>
@@ -509,10 +234,11 @@
       }, 4000);
     }
 
-    // ----- GAS INTEGRATION: Launch Module -----
+    // ----- GAS INTEGRATION: Launch Module (for Tactical Map) -----
     function launchModule(moduleName) {
       showToast(`Launching ${moduleName}...`, true, true);
       
+      // Check if google.script.run is available
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
           .withSuccessHandler(function(response) {
@@ -528,6 +254,7 @@
           })
           .launchModule(moduleName);
       } else {
+        // Fallback for local testing or when GAS API isn't available
         console.warn('Google Apps Script API not available - running in standalone mode');
         setTimeout(() => {
           showToast(`🚀 [DEMO] Launched ${moduleName}`, true);
@@ -535,15 +262,15 @@
       }
     }
 
-    // Handle external links with toast notifications
+    // Handle direct links with toast notifications for external links
     document.querySelectorAll('a[target="_blank"]').forEach(link => {
       link.addEventListener('click', function(e) {
-        const cardTitle = this.closest('.card')?.querySelector('.card-title')?.textContent || 'Module';
-        showToast(`🚀 Opening ${cardTitle}...`, true);
+        const moduleName = this.closest('.card-glow')?.querySelector('h3')?.textContent || 'Module';
+        showToast(`🚀 Opening ${moduleName}...`, true);
       });
     });
 
-    console.log('INTERGRASI MEDAN OPERASI · Systems initialized');
+    console.log('Script Hub ready · Google Apps Script deployment');
   </script>
 </body>
 </html>
