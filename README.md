@@ -1,1163 +1,291 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>INTERGRASI_MEDAN_OPERASI://</title>
-  
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
-  
-  <!-- Tailwind -->
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-  
-  <!-- Lucide Icons -->
-  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
-  
-  <!-- QRCode.js -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-
-  <style>
-    /* ===== BASE ===== */
-    :root {
-      --bg: #0a0f1a;
-      --card: #1a1f2e;
-      --border: #00ffc8;
-      --accent: #00ffc8;
-      --text: #e2e8f0;
-      --muted: #94a3b8;
-      --radius: 12px;
-      --shadow: 0 4px 24px rgba(0, 255, 200, 0.08);
-      --shadow-lg: 0 8px 40px rgba(0, 255, 200, 0.15);
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'Fira Sans', sans-serif;
-      background: #0a0f1a;
-      color: var(--text);
-      min-height: 100vh;
-    }
-
-    .mono { font-family: 'Space Mono', monospace; }
-
-    .grid-lines {
-      background-image: 
-        linear-gradient(rgba(0, 255, 200, 0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 255, 200, 0.04) 1px, transparent 1px);
-      background-size: 40px 40px;
-    }
-
-    .pulse-dot {
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 0.3; }
-      50% { opacity: 1; }
-    }
-
-    .clock-ring {
-      filter: drop-shadow(0 0 8px rgba(0, 255, 200, 0.2));
-    }
-
-    /* ===== TOAST ===== */
-    .toast {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: #0f172a;
-      border: 1px solid #00ffc8;
-      padding: 12px 20px;
-      border-radius: 8px;
-      color: #e2e8f0;
-      z-index: 9999;
-      transform: translateY(100px);
-      opacity: 0;
-      transition: all 0.3s ease;
-      font-family: 'Space Mono', monospace;
-      font-size: 14px;
-      max-width: 400px;
-      word-wrap: break-word;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-    }
-    .toast.show {
-      transform: translateY(0);
-      opacity: 1;
-    }
-
-    .spinner {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid #00ffc8;
-      border-top-color: transparent;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin-right: 8px;
-      vertical-align: middle;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* ===== GRID ITEMS (Button Cards) ===== */
-    .grid__item {
-      background: var(--card);
-      border: 1px solid rgba(0, 255, 200, 0.15);
-      border-radius: var(--radius);
-      padding: 20px;
-      cursor: grab;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 12px;
-      min-height: 160px;
-      position: relative;
-      transition: all 0.25s ease;
-      box-shadow: var(--shadow);
-    }
-
-    .grid__item:hover {
-      box-shadow: var(--shadow-lg);
-      transform: translateY(-4px);
-      border-color: rgba(0, 255, 200, 0.4);
-    }
-
-    .grid__item.dragging {
-      opacity: 0.5;
-      transform: scale(0.95);
-    }
-
-    .grid__item .title {
-      font-weight: 600;
-      font-size: 16px;
-      width: 100%;
-      color: #e2e8f0;
-    }
-
-    .grid__item .muted {
-      font-size: 12px;
-      color: var(--muted);
-      width: 100%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .grid__item .actions {
-      display: flex;
-      gap: 8px;
-      width: 100%;
-      margin-top: auto;
-    }
-
-    .grid__item .actions .btn {
-      flex: 1;
-      font-size: 13px;
-      padding: 8px 12px;
-      background: rgba(0, 255, 200, 0.08);
-      border: 1px solid rgba(0, 255, 200, 0.2);
-      border-radius: 6px;
-      color: #e2e8f0;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: 'Space Mono', monospace;
-      font-size: 11px;
-      text-align: center;
-    }
-
-    .grid__item .actions .btn:hover {
-      background: rgba(0, 255, 200, 0.2);
-      border-color: #00ffc8;
-    }
-
-    .grid__item .actions .btn.delete:hover {
-      background: rgba(239, 68, 68, 0.2);
-      border-color: #ef4444;
-      color: #ef4444;
-    }
-
-    /* ===== MODAL / FORM ===== */
-    .modal {
-      position: fixed;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(4px);
-      z-index: 1000;
-      padding: 20px;
-    }
-
-    .modal.active {
-      display: flex;
-    }
-
-    .form {
-      background: #1a1f2e;
-      padding: 32px;
-      border-radius: var(--radius);
-      min-width: 380px;
-      max-width: 500px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      border: 1px solid rgba(0, 255, 200, 0.2);
-      box-shadow: 0 8px 48px rgba(0, 0, 0, 0.6);
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-
-    .form h2 {
-      margin: 0 0 8px 0;
-      font-size: 24px;
-      font-weight: 400;
-      color: #00ffc8;
-      font-family: 'Space Mono', monospace;
-    }
-
-    .form label {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--muted);
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-    }
-
-    .form input,
-    .form select {
-      padding: 10px 12px;
-      border-radius: 6px;
-      border: 1px solid rgba(0, 255, 200, 0.2);
-      background: #0f172a;
-      color: #e2e8f0;
-      font-size: 14px;
-      font-family: inherit;
-      transition: border-color 0.2s;
-    }
-
-    .form input:focus,
-    .form select:focus {
-      outline: none;
-      border-color: #00ffc8;
-      box-shadow: 0 0 0 3px rgba(0, 255, 200, 0.1);
-    }
-
-    .form input[type="color"] {
-      padding: 4px;
-      height: 44px;
-      cursor: pointer;
-    }
-
-    .form__actions {
-      display: flex;
-      gap: 8px;
-      justify-content: flex-end;
-      margin-top: 8px;
-    }
-
-    .form__actions .btn {
-      padding: 10px 24px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      font-family: 'Space Mono', monospace;
-      font-size: 13px;
-      transition: all 0.2s;
-    }
-
-    .form__actions .btn.primary {
-      background: #00ffc8;
-      color: #0a0f1a;
-      font-weight: 700;
-    }
-
-    .form__actions .btn.primary:hover {
-      background: #00e0b0;
-      transform: scale(1.02);
-    }
-
-    .form__actions .btn.cancel {
-      background: rgba(255,255,255,0.05);
-      color: #94a3b8;
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .form__actions .btn.cancel:hover {
-      background: rgba(255,255,255,0.1);
-    }
-
-    /* ===== QR MODAL ===== */
-    #qr-modal .form {
-      min-width: auto;
-      align-items: center;
-      text-align: center;
-    }
-
-    #qr-container {
-      padding: 20px 0;
-    }
-
-    #qr-container canvas,
-    #qr-container img {
-      border-radius: 8px;
-      background: white;
-      padding: 12px;
-    }
-
-    /* ===== TOOLBAR ===== */
-    .toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: center;
-      padding: 16px 20px;
-      background: #1a1f2e;
-      border-radius: var(--radius);
-      border: 1px solid rgba(0, 255, 200, 0.1);
-      margin-bottom: 24px;
-    }
-
-    .toolbar label {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .toolbar select,
-    .toolbar input[type="text"] {
-      padding: 8px 12px;
-      border-radius: 6px;
-      border: 1px solid rgba(0, 255, 200, 0.15);
-      background: #0f172a;
-      color: #e2e8f0;
-      font-size: 13px;
-      font-family: 'Space Mono', monospace;
-    }
-
-    .toolbar select:focus,
-    .toolbar input[type="text"]:focus {
-      outline: none;
-      border-color: #00ffc8;
-    }
-
-    .toolbar .btn {
-      padding: 8px 16px;
-      border-radius: 6px;
-      border: 1px solid rgba(0, 255, 200, 0.2);
-      background: transparent;
-      color: #e2e8f0;
-      cursor: pointer;
-      font-family: 'Space Mono', monospace;
-      font-size: 12px;
-      transition: all 0.2s;
-    }
-
-    .toolbar .btn:hover {
-      background: rgba(0, 255, 200, 0.1);
-      border-color: #00ffc8;
-    }
-
-    .toolbar .btn.primary {
-      background: #00ffc8;
-      color: #0a0f1a;
-      border: none;
-      font-weight: 700;
-    }
-
-    .toolbar .btn.primary:hover {
-      background: #00e0b0;
-      transform: scale(1.02);
-    }
-
-    /* ===== GRID LAYOUT ===== */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 20px;
-      margin-top: 8px;
-    }
-
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 768px) {
-      .main { padding: 16px; }
-      .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
-      .form { min-width: auto; margin: 10px; padding: 20px; }
-      .toolbar { flex-direction: column; align-items: stretch; }
-      .toolbar label { flex-wrap: wrap; }
-      #search { width: 100% !important; }
-    }
-
-    /* ===== SCROLLBAR ===== */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #0a0f1a; }
-    ::-webkit-scrollbar-thumb { background: #00ffc8; border-radius: 3px; }
-
-    /* ===== STATS ===== */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    .stat-card {
-      background: #1a1f2e;
-      border: 1px solid rgba(0, 255, 200, 0.1);
-      border-radius: var(--radius);
-      padding: 16px 20px;
-      text-align: center;
-    }
-
-    .stat-card .value {
-      font-family: 'Space Mono', monospace;
-      font-size: 28px;
-      font-weight: 700;
-      color: #00ffc8;
-    }
-
-    .stat-card .label {
-      font-size: 11px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-top: 4px;
-    }
-
-    .hidden { display: none !important; }
-
-    .badge {
-      display: inline-block;
-      padding: 2px 10px;
-      border-radius: 12px;
-      font-size: 10px;
-      font-family: 'Space Mono', monospace;
-      background: rgba(0, 255, 200, 0.1);
-      color: #00ffc8;
-      border: 1px solid rgba(0, 255, 200, 0.2);
-    }
-  </style>
-</head>
-<body class="grid-lines">
-
-  <!-- ===== TOAST ===== -->
-  <div id="toast" class="toast"></div>
-
-  <!-- ===== HEADER ===== -->
-  <header class="border-b border-cyan-900/40 relative overflow-hidden">
-    <img class="absolute inset-0 w-full h-full object-cover opacity-20" loading="lazy" 
-         src="https://images.pexels.com/photos/10885044/pexels-photo-10885044.jpeg?auto=compress&cs=tinysrgb&w=1280" 
-         alt="backdrop">
-    <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-slate-950/60"></div>
-    <div class="max-w-6xl mx-auto px-6 py-8 relative z-10">
-      <div class="flex items-center gap-3 mb-2">
-        <div class="w-3 h-3 rounded-full bg-emerald-400 pulse-dot"></div>
-        <span class="mono text-xs text-emerald-400 uppercase tracking-widest">systems online</span>
-      </div>
-      <h1 class="mono text-3xl font-bold" style="color: #00ffc8;">INTERGRASI_MEDAN_OPERASI://</h1>
-      <p class="mt-2 max-w-2xl text-slate-400 text-base">Design by Kursus PJK siri 17 2026 Cawangan Pengurusan Kejuruteraan dan Ketenteraan</p>
-    </div>
-  </header>
-
-  <!-- ===== MAIN ===== -->
-  <main class="max-w-6xl mx-auto px-6 py-8">
-
-    <!-- Stats -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="value" id="stat-total">0</div>
-        <div class="label">Total Buttons</div>
-      </div>
-      <div class="stat-card">
-        <div class="value" id="stat-urls">0</div>
-        <div class="label">URL Links</div>
-      </div>
-      <div class="stat-card">
-        <div class="value" id="stat-qr">0</div>
-        <div class="label">QR Codes</div>
-      </div>
-    </div>
-
-    <!-- Toolbar -->
-    <div class="toolbar">
-      <button class="btn primary" id="add-btn">+ Add Button</button>
-      
-      <input type="text" id="search" placeholder="Search..." style="flex:1; min-width:160px; padding:8px 14px; border-radius:6px; border:1px solid rgba(0,255,200,0.15); background:#0f172a; color:#e2e8f0; font-family:'Space Mono',monospace; font-size:13px;">
-      
-      <label>
-        Size:
-        <select id="size-select">
-          <option value="normal">Normal</option>
-          <option value="small">Small</option>
-          <option value="large">Large</option>
-        </select>
-      </label>
-
-      <button class="btn" id="export-btn">⬇ Export</button>
-      <button class="btn" id="import-btn">⬆ Import</button>
-      <input type="file" id="import-file" accept=".json" style="display:none;">
-
-      <button class="btn" id="undo-btn" title="Ctrl+Z">↩ Undo</button>
-      <button class="btn" id="redo-btn" title="Ctrl+Y">↪ Redo</button>
-    </div>
-
-    <!-- Grid -->
-    <div id="grid" class="grid"></div>
-
-    <!-- Empty State -->
-    <div id="empty-state" class="text-center py-16 text-slate-500 hidden">
-      <p class="text-lg mono">No buttons yet.</p>
-      <p class="text-sm text-slate-600">Click <span class="text-cyan-400">+ Add Button</span> to get started.</p>
-    </div>
-
-  </main>
-
-  <!-- ===== FOOTER ===== -->
-  <footer class="border-t border-cyan-900/40 mt-10">
-    <div class="max-w-6xl mx-auto px-6 py-6">
-      <p class="mono text-xs text-center text-slate-500">© 2026 Script Hub · All systems nominal</p>
-    </div>
-  </footer>
-
-  <!-- ===== MODAL: Add/Edit ===== -->
-  <div id="modal" class="modal">
-    <div class="form" id="button-form-container">
-      <h2 id="form-title">Create New Button</h2>
-      <form id="button-form">
-        <input type="hidden" id="edit-id" name="editId">
-        
-        <label>Title <input type="text" name="title" placeholder="Button title" required></label>
-        
-        <label>URL / Text <input type="text" name="url" placeholder="https://... or QR text"></label>
-        
-        <label>Mode
-          <select name="mode">
-            <option value="url">URL Link</option>
-            <option value="qr">QR Code</option>
-          </select>
-        </label>
-        
-        <label>Icon (emoji) <input type="text" name="icon" placeholder="⚡"></label>
-        
-        <label>Background Type
-          <select name="bgType" id="bg-type-select">
-            <option value="color">Solid Color</option>
-            <option value="gradient">Gradient</option>
-            <option value="image">Image URL</option>
-          </select>
-        </label>
-        
-        <label>Color <input type="color" name="color" value="#1a1f2e"></label>
-        
-        <label>Gradient (CSS) <input type="text" name="gradient" placeholder="linear-gradient(...)"></label>
-        
-        <label>Background Image URL <input type="text" name="bgImage" placeholder="https://..."></label>
-        
-        <label>Opacity <input type="range" name="opacity" min="0.2" max="1" step="0.05" value="1"></label>
-        
-        <label>Tags <input type="text" name="tags" placeholder="work, personal, etc"></label>
-        
-        <div class="form__actions">
-          <button type="button" class="btn cancel" id="cancel-btn">Cancel</button>
-          <button type="submit" class="btn primary">Save</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ===== MODAL: QR Display ===== -->
-  <div id="qr-modal" class="modal">
-    <div class="form" style="min-width:auto; align-items:center;">
-      <h2 style="font-size:18px;">🔲 QR Code</h2>
-      <div id="qr-container"></div>
-      <button class="btn cancel" id="close-qr" style="margin-top:8px;">Close</button>
-    </div>
-  </div>
-
-  <!-- ===== JAVASCRIPT ===== -->
-  <script type="module">
-    import { generateQRCode } from './qr-generator.js';
-
-    // ========================================
-    // STATE
-    // ========================================
-    const STORAGE_KEY = 'my-website-buttons-v1';
-    const grid = document.getElementById('grid');
-    const addBtn = document.getElementById('add-btn');
-    const modal = document.getElementById('modal');
-    const form = document.getElementById('button-form');
-    const cancelBtn = document.getElementById('cancel-btn');
-    const search = document.getElementById('search');
-    const exportBtn = document.getElementById('export-btn');
-    const importBtn = document.getElementById('import-btn');
-    const importFile = document.getElementById('import-file');
-    const qrModal = document.getElementById('qr-modal');
-    const qrContainer = document.getElementById('qr-container');
-    const closeQr = document.getElementById('close-qr');
-    const sizeSelect = document.getElementById('size-select');
-    const undoBtn = document.getElementById('undo-btn');
-    const redoBtn = document.getElementById('redo-btn');
-
-    let state = { items: [] };
-    let undoStack = [];
-    let redoStack = [];
-
-    function uid() {
-      return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    }
-
-    function saveState(pushUndo = true) {
-      if (pushUndo) undoStack.push(JSON.stringify(state));
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      updateStats();
-    }
-
-    const debouncedSave = debounce(() => saveState(true), 500);
-
-    function loadState() {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        try { state = JSON.parse(raw); } catch(e) { state = { items: [] }; }
-      }
-      render();
-      updateStats();
-    }
-
-    // ========================================
-    // RENDER
-    // ========================================
-    function render() {
-      const filter = (search.value || '').toLowerCase();
-      const filtered = state.items.filter(item => {
-        if (!filter) return true;
-        return (item.title || '').toLowerCase().includes(filter) || 
-               (item.tags || '').toLowerCase().includes(filter);
-      });
-
-      grid.innerHTML = '';
-      
-      if (filtered.length === 0) {
-        document.getElementById('empty-state').classList.remove('hidden');
-      } else {
-        document.getElementById('empty-state').classList.add('hidden');
-      }
-
-      filtered.forEach(item => {
-        const el = document.createElement('div');
-        el.className = 'grid__item';
-        el.setAttribute('draggable', 'true');
-        el.dataset.id = item.id;
-
-        // Background
-        if (item.bgType === 'color' && item.color) {
-          el.style.background = item.color;
-        } else if (item.bgType === 'gradient' && item.gradient) {
-          el.style.background = item.gradient;
-        } else if (item.bgType === 'image' && item.bgImage) {
-          el.style.background = `url(${item.bgImage}) center/cover`;
-        } else {
-          el.style.background = '#1a1f2e';
-        }
-        el.style.opacity = item.opacity ?? 1;
-
-        const mode = item.mode === 'qr' ? '🔗 QR' : '🌐 URL';
-        const icon = item.icon || (item.mode === 'qr' ? '🔲' : '🔗');
-
-        el.innerHTML = `
-          <div style="width:100%; display:flex; align-items:center; gap:8px;">
-            <span style="font-size:20px;">${icon}</span>
-            <div>
-              <div class="title">${escapeHtml(item.title || 'Untitled')}</div>
-              <div class="muted">${mode}</div>
-            </div>
-          </div>
-          <div class="actions">
-            <button class="btn open" data-id="${item.id}">Open</button>
-            <button class="btn edit" data-id="${item.id}">Edit</button>
-            <button class="btn delete" data-id="${item.id}">Delete</button>
-          </div>
-        `;
-
-        // Events
-        el.querySelector('.open').addEventListener('click', (e) => {
-          e.stopPropagation();
-          if (item.mode === 'qr') {
-            openQR(item);
-          } else {
-            if (item.url) window.open(item.url, '_blank');
-            else showToast('No URL set', false);
-          }
-        });
-
-        el.querySelector('.edit').addEventListener('click', (e) => {
-          e.stopPropagation();
-          openForm(item);
-        });
-
-        el.querySelector('.delete').addEventListener('click', (e) => {
-          e.stopPropagation();
-          if (confirm(`Delete "${item.title}"?`)) {
-            state.items = state.items.filter(i => i.id !== item.id);
-            debouncedSave();
-            render();
-            showToast(`Deleted "${item.title}"`, true);
-          }
-        });
-
-        // Drag
-        el.addEventListener('dragstart', e => {
-          el.classList.add('dragging');
-          e.dataTransfer.setData('text/plain', item.id);
-        });
-        el.addEventListener('dragend', e => {
-          el.classList.remove('dragging');
-        });
-
-        grid.appendChild(el);
-      });
-    }
-
-    // ========================================
-    // DRAG & DROP REORDER
-    // ========================================
-    grid.addEventListener('dragover', e => {
-      e.preventDefault();
-      const after = getDragAfterElement(grid, e.clientY);
-      const dragging = document.querySelector('.dragging');
-      if (!dragging) return;
-      if (after == null) grid.appendChild(dragging);
-      else grid.insertBefore(dragging, after);
-    });
-
-    grid.addEventListener('drop', e => {
-      e.preventDefault();
-      const children = Array.from(grid.querySelectorAll('.grid__item:not(.dragging)')).map(c => c.dataset.id);
-      const draggedId = e.dataTransfer.getData('text/plain');
-      // Rebuild order
-      const ordered = [];
-      const draggedItem = state.items.find(i => i.id === draggedId);
-      if (!draggedItem) return;
-      
-      // Get items in current visual order
-      const visualIds = [];
-      grid.querySelectorAll('.grid__item').forEach(el => visualIds.push(el.dataset.id));
-      
-      state.items = visualIds.map(id => state.items.find(i => i.id === id)).filter(Boolean);
-      debouncedSave();
-      render();
-    });
-
-    function getDragAfterElement(container, y) {
-      const draggableElements = [...container.querySelectorAll('.grid__item:not(.dragging)')];
-      return draggableElements.reduce((closest, child) => {
-        const box = child.getBoundingClientRect();
-        const offset = y - box.top - box.height / 2;
-        if (offset < 0 && offset > closest.offset) {
-          return { offset, element: child };
-        } else {
-          return closest;
-        }
-      }, { offset: -Infinity }).element;
-    }
-
-    // ========================================
-    // FORM
-    // ========================================
-    function openForm(item = null) {
-      if (item) {
-        document.getElementById('form-title').textContent = '✏️ Edit Button';
-        document.getElementById('edit-id').value = item.id;
-        form.elements.title.value = item.title || '';
-        form.elements.url.value = item.url || '';
-        form.elements.mode.value = item.mode || 'url';
-        form.elements.icon.value = item.icon || '';
-        form.elements.bgType.value = item.bgType || 'color';
-        form.elements.color.value = item.color || '#1a1f2e';
-        form.elements.gradient.value = item.gradient || '';
-        form.elements.bgImage.value = item.bgImage || '';
-        form.elements.opacity.value = item.opacity ?? 1;
-        form.elements.tags.value = item.tags || '';
-      } else {
-        document.getElementById('form-title').textContent = '➕ Create New Button';
-        document.getElementById('edit-id').value = '';
-        form.reset();
-        form.elements.color.value = '#1a1f2e';
-        form.elements.opacity.value = 1;
-        form.elements.mode.value = 'url';
-        form.elements.bgType.value = 'color';
-      }
-      modal.classList.add('active');
-    }
-
-    function closeForm() {
-      modal.classList.remove('active');
-    }
-
-    addBtn.addEventListener('click', () => openForm());
-    cancelBtn.addEventListener('click', closeForm);
-
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-      const data = new FormData(form);
-      const editId = document.getElementById('edit-id').value;
-      
-      const item = {
-        id: editId || uid(),
-        title: data.get('title') || 'Untitled',
-        url: data.get('url') || '',
-        mode: data.get('mode') || 'url',
-        icon: data.get('icon') || '',
-        bgType: data.get('bgType') || 'color',
-        color: data.get('color') || '#1a1f2e',
-        gradient: data.get('gradient') || '',
-        bgImage: data.get('bgImage') || '',
-        opacity: parseFloat(data.get('opacity') || 1),
-        tags: data.get('tags') || ''
-      };
-
-      if (editId) {
-        const idx = state.items.findIndex(i => i.id === editId);
-        if (idx >= 0) state.items[idx] = item;
-        showToast(`Updated "${item.title}"`, true);
-      } else {
-        state.items.unshift(item);
-        showToast(`Created "${item.title}"`, true);
-      }
-
-      debouncedSave();
-      closeForm();
-      render();
-    });
-
-    // ========================================
-    // QR
-    // ========================================
-    function openQR(item) {
-      qrModal.classList.add('active');
-      qrContainer.innerHTML = '';
-      const text = item.url || item.title || 'QR Code';
-      try {
-        generateQRCode(qrContainer, text, { size: 240 });
-      } catch (e) {
-        qrContainer.innerHTML = `<p class="text-red-400">Error generating QR: ${e.message}</p>`;
-      }
-    }
-
-    closeQr.addEventListener('click', () => {
-      qrModal.classList.remove('active');
-      qrContainer.innerHTML = '';
-    });
-
-    // Close modals on backdrop click
-    document.querySelectorAll('.modal').forEach(m => {
-      m.addEventListener('click', e => {
-        if (e.target === m) {
-          m.classList.remove('active');
-          if (m.id === 'qr-modal') qrContainer.innerHTML = '';
-        }
-      });
-    });
-
-    // ========================================
-    // EXPORT / IMPORT
-    // ========================================
-    exportBtn.addEventListener('click', () => {
-      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `buttons-${new Date().toISOString().slice(0,10)}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast('Exported successfully ✅', true);
-    });
-
-    importBtn.addEventListener('click', () => importFile.click());
-    importFile.addEventListener('change', e => {
-      const f = e.target.files[0];
-      if (!f) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          const data = JSON.parse(reader.result);
-          if (data.items) {
-            state = data;
-            saveState(true);
-            render();
-            showToast(`Imported ${state.items.length} buttons ✅`, true);
-          } else {
-            showToast('Invalid format: missing "items" array', false);
-          }
-        } catch (err) {
-          showToast('Invalid JSON file', false);
-        }
-      };
-      reader.readAsText(f);
-      importFile.value = '';
-    });
-
-    // ========================================
-    // SEARCH
-    // ========================================
-    search.addEventListener('input', () => render());
-
-    // ========================================
-    // SIZE
-    // ========================================
-    sizeSelect.addEventListener('change', () => {
-      grid.classList.toggle('grid--small', sizeSelect.value === 'small');
-      grid.classList.toggle('grid--large', sizeSelect.value === 'large');
-    });
-
-    // ========================================
-    // UNDO / REDO
-    // ========================================
-    undoBtn.addEventListener('click', undo);
-    redoBtn.addEventListener('click', redo);
-
-    function undo() {
-      if (undoStack.length === 0) { showToast('Nothing to undo', false); return; }
-      redoStack.push(JSON.stringify(state));
-      state = JSON.parse(undoStack.pop());
-      saveState(false);
-      render();
-      showToast('↩ Undo', true);
-    }
-
-    function redo() {
-      if (redoStack
-import { generateQRCode } from './qr-generator.js';
+Script Hub - INTERGRASI_MEDAN_OPERASI://
+📋 Overview
+A dynamic operations dashboard for managing tactical buttons, QR codes, and operational links. Built for the Kursus PJK siri 17 2026 at Cawangan Pengurusan Kejuruteraan dan Ketenteraan.
 
+Live Demo: GitHub Pages URL
+
+🚀 Features
+Core Functionality
+Button Management: Create, edit, delete, and reorder buttons with drag & drop
+
+Dual Mode: Each button can be a URL link or QR code generator
+
+Rich Customization: Background colors, gradients, images, opacity, icons
+
+QR Generation: Built-in QR code generator using QRCode.js
+
+Search & Filter: Quick search by title or tags
+
+Statistics Dashboard: Real-time counts of total buttons, URLs, and QR codes
+
+Data Management
+Local Storage: Auto-saves to browser localStorage
+
+Export/Import: JSON export/import for backup and sharing
+
+Undo/Redo: Full undo/redo support (Ctrl+Z / Ctrl+Y)
+
+Save Shortcut: Ctrl+S to manually save state
+
+UI/UX
+Dark Theme: Tactical dark interface with cyan accent (#00ffc8)
+
+Responsive: Works on desktop, tablet, and mobile
+
+Keyboard Shortcuts: Full keyboard navigation support
+
+Toast Notifications: Real-time feedback for all actions
+
+📦 Installation
+Option 1: GitHub Pages (Recommended)
+Fork this repository
+
+Enable GitHub Pages in repository settings
+
+Access via https://yourusername.github.io/script-hub/
+
+Option 2: Local Development
+bash
+# Clone the repository
+git clone https://github.com/yourusername/script-hub.git
+
+# Navigate to directory
+cd script-hub
+
+# Install dependencies (optional)
+npm install
+
+# Start live server
+npx live-server
+Option 3: Google Apps Script Deployment
+Create a new Google Apps Script project
+
+Deploy as a web app
+
+Copy all HTML/CSS/JS into the script editor
+
+🛠️ Technology Stack
+Technology	Purpose
+HTML5	Structure
+CSS3 + Tailwind	Styling
+Vanilla JS (ES Modules)	Logic
+QRCode.js	QR generation
+Lucide Icons	Icon library
+Google Fonts (Fira Sans, Space Mono)	Typography
+LocalStorage API	Data persistence
+📁 File Structure
+text
+script-hub/
+├── index.html          # Main application
+├── qr-generator.js     # QR code module
+├── manifest.json       # PWA manifest
+├── service-worker.js   # Service worker for offline
+├── package.json        # NPM dependencies
+├── README.md           # This file
+└── assets/             # Images and icons
+    ├── images/
+    │   ├── icon-192.png
+    │   └── icon-512.png
+    └── ...
+🎮 Usage Guide
+Adding a Button
+Click "+ Add Button"
+
+Fill in:
+
+Title: Display name
+
+URL/Text: Link or QR content
+
+Mode: URL or QR
+
+Icon: Emoji (optional)
+
+Background: Color, gradient, or image
+
+Opacity: 0.2 - 1.0
+
+Tags: Search keywords
+
+Click "Save"
+
+Managing Buttons
+Open: Click to open URL or display QR
+
+Edit: Modify button properties
+
+Delete: Remove button (with confirmation)
+
+Drag & Drop: Reorder by dragging cards
+
+Keyboard Shortcuts
+Shortcut	Action
+Ctrl+S	Save state
+Ctrl+Z	Undo
+Ctrl+Y	Redo
+Esc	Close modal
+Data Operations
+Export: Downloads buttons-YYYY-MM-DD.json
+
+Import: Upload previously exported JSON
+
+Search: Filters by title or tags
+
+🔧 Configuration
+Changing Colors
+Edit CSS variables in index.html:
+
+css
+:root {
+  --border: #00ffc8;     /* Accent color */
+  --bg: #0a0f1a;         /* Background */
+  --card: #1a1f2e;       /* Card background */
+  --text: #e2e8f0;       /* Text color */
+  --muted: #94a3b8;      /* Muted text */
+}
+Storage Key
+Data stored in localStorage under:
+
+javascript
 const STORAGE_KEY = 'my-website-buttons-v1';
-const grid = document.getElementById('grid');
-const addBtn = document.getElementById('add-btn');
-const modal = document.getElementById('modal');
-const form = document.getElementById('button-form');
-const cancel = document.getElementById('cancel');
-const search = document.getElementById('search');
-const exportBtn = document.getElementById('export');
-const importBtn = document.getElementById('import');
-const importFile = document.getElementById('import-file');
-const qrModal = document.getElementById('qr-modal');
-const qrContainer = document.getElementById('qr-container');
-const closeQr = document.getElementById('close-qr');
-const toggleTheme = document.getElementById('toggle-theme');
-const sizeSelect = document.getElementById('size-select');
-const previewToggle = document.getElementById('preview-toggle');
+📱 Mobile Support
+Fully responsive grid layout
 
-let state = { items: [] };
-let undoStack = [];
-let redoStack = [];
+Touch-friendly drag & drop
 
-function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+Optimized form inputs for mobile
 
-function saveState(pushUndo=true){
-  if(pushUndo) undoStack.push(JSON.stringify(state));
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+Adaptive toolbar layout
+
+🚦 Deployment
+GitHub Pages
+bash
+# Push to main branch
+git push origin main
+
+# Enable Pages in Settings > Pages
+# Select "main" branch and "/" root
+Netlify/Vercel
+Connect repository
+
+Auto-deploy on push
+
+Custom domain support
+
+Google Apps Script
+Open script.google.com
+
+Create new project
+
+Paste HTML as Index.html
+
+Deploy as web app
+
+Set access to "Anyone" or "Organization"
+
+🤝 Contributing
+Fork the repository
+
+Create feature branch (git checkout -b feature/amazing)
+
+Commit changes (git commit -m 'Add amazing feature')
+
+Push to branch (git push origin feature/amazing)
+
+Open Pull Request
+
+📄 License
+MIT License - Free for personal and commercial use.
+
+🙏 Credits
+Design: Kursus PJK siri 17 2026, Cawangan Pengurusan Kejuruteraan dan Ketenteraan
+
+Images: Pexels (stock photos)
+
+Icons: Lucide
+
+QR Library: QRCode.js
+
+🐛 Troubleshooting
+Buttons not saving?
+Check browser localStorage permissions
+
+Try Ctrl+S to force save
+
+Check console for errors
+
+QR Code not displaying?
+Ensure QRCode.js loads correctly
+
+Check URL/text is valid
+
+Try using https:// protocol
+
+Drag & Drop not working?
+Disable browser extensions
+
+Try desktop browser
+
+Check touch support on mobile
+
+📊 API Reference
+State Object
+javascript
+{
+  items: [
+    {
+      id: "unique-id",
+      title: "Button Title",
+      url: "https://example.com",
+      mode: "url", // or "qr"
+      icon: "⚡",
+      bgType: "color", // "gradient" | "image"
+      color: "#1a1f2e",
+      gradient: "linear-gradient(...)",
+      bgImage: "https://...",
+      opacity: 1,
+      tags: "work, tactical"
+    }
+  ]
 }
+Functions
+javascript
+// Create button
+addButton(itemData)
 
-const debouncedSave = debounce(()=>saveState(true), 500);
+// Update button
+updateButton(id, updatedData)
 
-function loadState(){
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if(raw){ state = JSON.parse(raw); }
-  render();
-}
+// Delete button
+deleteButton(id)
 
-function render(){
-  grid.innerHTML = '';
-  const filter = (search.value||'').toLowerCase();
-  state.items.forEach(item=>{
-    if(filter && !(item.title||'').toLowerCase().includes(filter) && !(item.tags||'').toLowerCase().includes(filter)) return;
-    const el = document.createElement('div');
-    el.className = 'grid__item';
-    el.setAttribute('draggable','true');
-    el.dataset.id = item.id;
-    el.style.background = item.bgType==='color'? item.color : item.bgType==='gradient'? item.gradient : `url(${item.bgImage}) center/cover`;
-    el.style.opacity = item.opacity ?? 1;
-    
-    const mode = item.mode === 'qr' ? '🔗 QR' : '🌐 URL';
-    el.innerHTML = `
-      <div style="width:100%">
-        <div class="title">${escapeHtml(item.title||'Untitled')}</div>
-        <div class="muted">${mode}</div>
-      </div>
-      <div class="actions">
-        <button class="btn open" title="Open link">Open</button>
-        <button class="btn edit" title="Edit button">Edit</button>
-        <button class="btn delete" title="Delete button">Delete</button>
-      </div>
-    `;
+// Export data
+exportData()
 
-    // events
-    el.querySelector('.open').addEventListener('click', (e)=>{
-      e.stopPropagation();
-      if(item.mode==='qr') { openQR(item); } else { window.open(item.url,'_blank'); }
-    });
-    
-    el.querySelector('.edit').addEventListener('click', (e)=>{
-      e.stopPropagation();
-      editItem(item);
-    });
-    
-    el.querySelector('.delete').addEventListener('click', (e)=>{
-      e.stopPropagation();
-      if(confirm('Delete this button?')) { state.items = state.items.filter(i=>i.id!==item.id); debouncedSave(); render(); }
-    });
+// Import data
+importData(jsonData)
+🔜 Roadmap
+Firebase/Cloud sync
 
-    // drag
-    el.addEventListener('dragstart', e=>{ el.classList.add('dragging'); e.dataTransfer.setData('text/plain', item.id); });
-    el.addEventListener('dragend', e=>{ el.classList.remove('dragging'); });
+User authentication
 
-    grid.appendChild(el);
-  });
-  document.getElementById('stat-total').textContent = state.items.length;
-  document.getElementById('stat-qr').textContent = state.items.filter(i=>i.mode==='qr').length;
-  document.getElementById('stat-urls').textContent = state.items.filter(i=>i.mode==='url').length;
-}
+Multiple workspaces
 
-// handle reordering
-grid.addEventListener('dragover', e=>{
-  e.preventDefault();
-  const after = getDragAfterElement(grid, e.clientY);
-  const dragging = document.querySelector('.dragging');
-  if(!dragging) return;
-  if(after==null) grid.appendChild(dragging); else grid.insertBefore(dragging, after);
-});
-grid.addEventListener('drop', e=>{
-  const id = e.dataTransfer.getData('text/plain');
-  const children = Array.from(grid.children).map(c=>c.dataset.id);
-  state.items = children.map(cid=>state.items.find(x=>x.id===cid)).filter(Boolean);
-  debouncedSave(); render();
-});
+QR code scanning
 
-function getDragAfterElement(container, y){
-  const draggableElements = [...container.querySelectorAll('.grid__item:not(.dragging)')];
-  return draggableElements.reduce((closest, child)=>{
-    const box = child.getBoundingClientRect();
-    const offset = y - box.top - box.height/2;
-    if(offset<0 && offset>closest.offset) return {offset, element:child}; else return closest;
-  }, {offset:-Infinity}).element;
-}
+Analytics dashboard
 
-// UI actions
-addBtn.addEventListener('click', ()=>openForm());
-cancel.addEventListener('click', ()=>closeForm());
-form.addEventListener('submit', e=>{
-  e.preventDefault();
-  const data = new FormData(form);
-  const itemId = form.dataset.editId;
-  const item = {
-    id: itemId || uid(),
-    title: data.get('title'),
-    url: data.get('url'),
-    mode: data.get('mode')||'url',
-    icon: data.get('icon')||'',
-    bgType: data.get('bgType')||'color',
-    color: data.get('color')||'#1f73e8',
-    gradient: data.get('gradient'),
-    bgImage: data.get('bgImage'),
-    opacity: parseFloat(data.get('opacity')||1),
-    tags: data.get('tags')||''
-  };
-  
-  if(itemId){
-    const idx = state.items.findIndex(i=>i.id===itemId);
-    if(idx>=0) state.items[idx] = item;
-  } else {
-    state.items.unshift(item);
-  }
-  debouncedSave(); closeForm(); render();
-});
+Export to PDF/CSV
 
-function openForm(item=null){ 
-  if(item){
-    document.getElementById('form-title').textContent = 'Edit Button';
-    form.dataset.editId = item.id;
-    form.elements.title.value = item.title || '';
-    form.elements.url.value = item.url || '';
-    form.elements.mode.value = item.mode || 'url';
-    form.elements.icon.value = item.icon || '';
-    form.elements.bgType.value = item.bgType || 'color';
-    form.elements.color.value = item.color || '#1f73e8';
-    form.elements.gradient.value = item.gradient || '';
-    form.elements.bgImage.value = item.bgImage || '';
-    form.elements.opacity.value = item.opacity || 1;
-    form.elements.tags.value = item.tags || '';
-  } else {
-    document.getElementById('form-title').textContent = 'Create New Button';
-    form.dataset.editId = '';
-    form.reset();
-  }
-  modal.hidden = false; modal.style.display='flex'; 
-}
+Custom themes
 
-function editItem(item){ openForm(item); }
+Chrome extension
 
-function closeForm(){ modal.hidden = true; modal.style.display='none'; form.dataset.editId = ''; }
+📧 Support
+Issues: GitHub Issues
 
-function openQR(item){ qrModal.hidden = false; qrContainer.innerHTML=''; generateQRCode(qrContainer, item.url||item.title, {size:240}); }
-closeQr.addEventListener('click', ()=>{ qrModal.hidden=true; qrContainer.innerHTML=''; });
+Email: support@script-hub.com
 
-exportBtn.addEventListener('click', ()=>{
-  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download='buttons.json'; a.click(); URL.revokeObjectURL(url);
-});
-importBtn.addEventListener('click', ()=>importFile.click());
-importFile.addEventListener('change', e=>{
-  const f = e.target.files[0]; if(!f) return; const reader = new FileReader(); reader.onload = ()=>{ try{ state = JSON.parse(reader.result); saveState(true); render(); }catch(err){ alert('Invalid JSON'); } }; reader.readAsText(f);
-});
+Documentation: Wiki
 
-search.addEventListener('input', ()=>render());
-
-toggleTheme.addEventListener('click', ()=>{
-  document.documentElement.classList.toggle('light');
-});
-
-sizeSelect.addEventListener('change', ()=>{
-  grid.classList.toggle('grid--small', sizeSelect.value==='small');
-  grid.classList.toggle('grid--large', sizeSelect.value==='large');
-});
-
-previewToggle.addEventListener('change', ()=>{
-  document.querySelectorAll('.grid__item').forEach(i=> i.classList.toggle('preview', previewToggle.checked));
-});
-
-// keyboard shortcuts
-window.addEventListener('keydown', e=>{
-  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='s'){ e.preventDefault(); saveState(); alert('Saved'); }
-  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='z'){ e.preventDefault(); undo(); }
-  if((e.ctrlKey||e.metaKey) && (e.key.toLowerCase()==='y')){ e.preventDefault(); redo(); }
-});
-
-function undo(){ if(!undoStack.length) return; redoStack.push(JSON.stringify(state)); state = JSON.parse(undoStack.pop()); saveState(false); render(); }
-function redo(){ if(!redoStack.length) return; undoStack.push(JSON.stringify(state)); state = JSON.parse(redoStack.pop()); saveState(false); render(); }
-
-// utilities
-function debounce(fn, ms=200){ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn.apply(this,args), ms); }; }
-function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
-
-// shareable link
-function encodeStateToHash(){ const data = btoa(unescape(encodeURIComponent(JSON.stringify(state)))); location.hash = data; }
-function loadFromHash(){ if(location.hash.length<2) return; try{ const raw = decodeURIComponent(escape(atob(location.hash.slice(1)))); state = JSON.parse(raw); saveState(true); render(); }catch(e){} }
-
-// service worker registration (PWA)
-if('serviceWorker' in navigator){ navigator.serviceWorker.register('service-worker.js').catch(()=>{}); }
-
-// init
-loadFromHash(); loadState();
+Made with ❤️ for the Kursus PJK siri 17 2026
