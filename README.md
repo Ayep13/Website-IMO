@@ -1,54 +1,942 @@
-# Script Hub - Intergrasi Medan Operasi (IMO)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>INTERGRASI_MEDAN_OPERASI://</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  
+  <!-- QRCode.js -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 
-A modern, responsive web dashboard for managing automated recovery and movement control systems. Built with Tailwind CSS and JavaScript, featuring real-time data management and QR code generation.
+  <style>
+    /* ===== BASE ===== */
+    :root {
+      --bg: #0a0f1a;
+      --card: #1a1f2e;
+      --border: #00ffc8;
+      --accent: #00ffc8;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --radius: 12px;
+      --shadow: 0 4px 24px rgba(0, 255, 200, 0.08);
+      --shadow-lg: 0 8px 40px rgba(0, 255, 200, 0.15);
+    }
 
-## 🎯 Features
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-- **Dynamic Dashboard** - Create and manage customizable buttons
-- **QR Code Generator** - Generate QR codes for quick access
-- **Google Apps Integration** - Connect to Google Sheets for data automation
-- **Responsive Design** - Works on desktop, tablet, and mobile devices
-- **Modern UI** - Sleek terminal-inspired interface with smooth animations
-- **Offline Capable** - Progressive Web App with service worker support
+    body {
+      font-family: 'Fira Sans', sans-serif;
+      background: #0a0f1a;
+      color: var(--text);
+      min-height: 100vh;
+    }
 
-## 📁 Project Structure
+    .mono { font-family: 'Space Mono', monospace; }
 
-The main application is in the `WEBSITE IMO/` folder containing:
-- `index.html` - Main application
-- `css/style.css` - Styling
-- `js/` - JavaScript modules
-- `manifest.json` - PWA configuration
-- `service-worker.js` - Offline support
+    .grid-lines {
+      background-image: 
+        linear-gradient(rgba(0, 255, 200, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 200, 0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
 
-## 🚀 Quick Start
+    .pulse-dot {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
 
-1. Open `WEBSITE IMO/index.html` in your browser
-2. No installation or build step required!
+    .clock-ring {
+      filter: drop-shadow(0 0 8px rgba(0, 255, 200, 0.2));
+    }
 
-## 📱 Progressive Web App
+    /* ===== TOAST ===== */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0f172a;
+      border: 1px solid #00ffc8;
+      padding: 12px 20px;
+      border-radius: 8px;
+      color: #e2e8f0;
+      z-index: 9999;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+      max-width: 400px;
+      word-wrap: break-word;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    }
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
 
-Install as an app on your device:
-- Click the address bar menu and select "Install app"
-- Or tap "Add to Home Screen" on mobile
-- Access directly from your home screen!
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #00ffc8;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
 
-## 💻 Browser Compatibility
+    /* ===== GRID ITEMS (Button Cards) ===== */
+    .grid__item {
+      background: var(--card);
+      border: 1px solid rgba(0, 255, 200, 0.15);
+      border-radius: var(--radius);
+      padding: 20px;
+      cursor: grab;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+      min-height: 160px;
+      position: relative;
+      transition: all 0.25s ease;
+      box-shadow: var(--shadow);
+    }
 
-- Chrome/Chromium (recommended)
-- Firefox
-- Safari
-- Edge
+    .grid__item:hover {
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-4px);
+      border-color: rgba(0, 255, 200, 0.4);
+    }
 
-## 🤝 For Developers
+    .grid__item.dragging {
+      opacity: 0.5;
+      transform: scale(0.95);
+    }
 
-To use with a local server:
-```bash
-npm install
-npm start
-```
+    .grid__item .title {
+      font-weight: 600;
+      font-size: 16px;
+      width: 100%;
+      color: #e2e8f0;
+    }
 
----
+    .grid__item .muted {
+      font-size: 12px;
+      color: var(--muted);
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
 
-**Status:** 🟢 Systems Online
+    .grid__item .actions {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      margin-top: auto;
+    }
 
-Design by Kursus PJK siri 17 2026 Cawangan Pengurusan Kejuruteraan dan Ketenteraan
+    .grid__item .actions .btn {
+      flex: 1;
+      font-size: 13px;
+      padding: 8px 12px;
+      background: rgba(0, 255, 200, 0.08);
+      border: 1px solid rgba(0, 255, 200, 0.2);
+      border-radius: 6px;
+      color: #e2e8f0;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .grid__item .actions .btn:hover {
+      background: rgba(0, 255, 200, 0.2);
+      border-color: #00ffc8;
+    }
+
+    .grid__item .actions .btn.delete:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #ef4444;
+      color: #ef4444;
+    }
+
+    /* ===== MODAL / FORM ===== */
+    .modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .form {
+      background: #1a1f2e;
+      padding: 32px;
+      border-radius: var(--radius);
+      min-width: 380px;
+      max-width: 500px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      border: 1px solid rgba(0, 255, 200, 0.2);
+      box-shadow: 0 8px 48px rgba(0, 0, 0, 0.6);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .form h2 {
+      margin: 0 0 8px 0;
+      font-size: 24px;
+      font-weight: 400;
+      color: #00ffc8;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .form label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .form input,
+    .form select {
+      padding: 10px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(0, 255, 200, 0.2);
+      background: #0f172a;
+      color: #e2e8f0;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    .form input:focus,
+    .form select:focus {
+      outline: none;
+      border-color: #00ffc8;
+      box-shadow: 0 0 0 3px rgba(0, 255, 200, 0.1);
+    }
+
+    .form input[type="color"] {
+      padding: 4px;
+      height: 44px;
+      cursor: pointer;
+    }
+
+    .form__actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+
+    .form__actions .btn {
+      padding: 10px 24px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .form__actions .btn.primary {
+      background: #00ffc8;
+      color: #0a0f1a;
+      font-weight: 700;
+    }
+
+    .form__actions .btn.primary:hover {
+      background: #00e0b0;
+      transform: scale(1.02);
+    }
+
+    .form__actions .btn.cancel {
+      background: rgba(255,255,255,0.05);
+      color: #94a3b8;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .form__actions .btn.cancel:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    /* ===== QR MODAL ===== */
+    #qr-modal .form {
+      min-width: auto;
+      align-items: center;
+      text-align: center;
+    }
+
+    #qr-container {
+      padding: 20px 0;
+    }
+
+    #qr-container canvas,
+    #qr-container img {
+      border-radius: 8px;
+      background: white;
+      padding: 12px;
+    }
+
+    /* ===== TOOLBAR ===== */
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      padding: 16px 20px;
+      background: #1a1f2e;
+      border-radius: var(--radius);
+      border: 1px solid rgba(0, 255, 200, 0.1);
+      margin-bottom: 24px;
+    }
+
+    .toolbar label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .toolbar select,
+    .toolbar input[type="text"] {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(0, 255, 200, 0.15);
+      background: #0f172a;
+      color: #e2e8f0;
+      font-size: 13px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .toolbar select:focus,
+    .toolbar input[type="text"]:focus {
+      outline: none;
+      border-color: #00ffc8;
+    }
+
+    .toolbar .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: 1px solid rgba(0, 255, 200, 0.2);
+      background: transparent;
+      color: #e2e8f0;
+      cursor: pointer;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+
+    .toolbar .btn:hover {
+      background: rgba(0, 255, 200, 0.1);
+      border-color: #00ffc8;
+    }
+
+    .toolbar .btn.primary {
+      background: #00ffc8;
+      color: #0a0f1a;
+      border: none;
+      font-weight: 700;
+    }
+
+    .toolbar .btn.primary:hover {
+      background: #00e0b0;
+      transform: scale(1.02);
+    }
+
+    /* ===== GRID LAYOUT ===== */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+      margin-top: 8px;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .main { padding: 16px; }
+      .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+      .form { min-width: auto; margin: 10px; padding: 20px; }
+      .toolbar { flex-direction: column; align-items: stretch; }
+      .toolbar label { flex-wrap: wrap; }
+      #search { width: 100% !important; }
+    }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0a0f1a; }
+    ::-webkit-scrollbar-thumb { background: #00ffc8; border-radius: 3px; }
+
+    /* ===== STATS ===== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: #1a1f2e;
+      border: 1px solid rgba(0, 255, 200, 0.1);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      text-align: center;
+    }
+
+    .stat-card .value {
+      font-family: 'Space Mono', monospace;
+      font-size: 28px;
+      font-weight: 700;
+      color: #00ffc8;
+    }
+
+    .stat-card .label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+
+    .hidden { display: none !important; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-family: 'Space Mono', monospace;
+      background: rgba(0, 255, 200, 0.1);
+      color: #00ffc8;
+      border: 1px solid rgba(0, 255, 200, 0.2);
+    }
+  </style>
+</head>
+<body class="grid-lines">
+
+  <!-- ===== TOAST ===== -->
+  <div id="toast" class="toast"></div>
+
+  <!-- ===== HEADER ===== -->
+  <header class="border-b border-cyan-900/40 relative overflow-hidden">
+    <img class="absolute inset-0 w-full h-full object-cover opacity-20" loading="lazy" 
+         src="https://images.pexels.com/photos/10885044/pexels-photo-10885044.jpeg?auto=compress&cs=tinysrgb&w=1280" 
+         alt="backdrop">
+    <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-slate-950/60"></div>
+    <div class="max-w-6xl mx-auto px-6 py-8 relative z-10">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-3 h-3 rounded-full bg-emerald-400 pulse-dot"></div>
+        <span class="mono text-xs text-emerald-400 uppercase tracking-widest">systems online</span>
+      </div>
+      <h1 class="mono text-3xl font-bold" style="color: #00ffc8;">INTERGRASI_MEDAN_OPERASI://</h1>
+      <p class="mt-2 max-w-2xl text-slate-400 text-base">Design by Kursus PJK siri 17 2026 Cawangan Pengurusan Kejuruteraan dan Ketenteraan</p>
+    </div>
+  </header>
+
+  <!-- ===== MAIN ===== -->
+  <main class="max-w-6xl mx-auto px-6 py-8">
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="value" id="stat-total">0</div>
+        <div class="label">Total Buttons</div>
+      </div>
+      <div class="stat-card">
+        <div class="value" id="stat-urls">0</div>
+        <div class="label">URL Links</div>
+      </div>
+      <div class="stat-card">
+        <div class="value" id="stat-qr">0</div>
+        <div class="label">QR Codes</div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <button class="btn primary" id="add-btn">+ Add Button</button>
+      
+      <input type="text" id="search" placeholder="Search..." style="flex:1; min-width:160px; padding:8px 14px; border-radius:6px; border:1px solid rgba(0,255,200,0.15); background:#0f172a; color:#e2e8f0; font-family:'Space Mono',monospace; font-size:13px;">
+      
+      <label>
+        Size:
+        <select id="size-select">
+          <option value="normal">Normal</option>
+          <option value="small">Small</option>
+          <option value="large">Large</option>
+        </select>
+      </label>
+
+      <button class="btn" id="export-btn">⬇ Export</button>
+      <button class="btn" id="import-btn">⬆ Import</button>
+      <input type="file" id="import-file" accept=".json" style="display:none;">
+
+      <button class="btn" id="undo-btn" title="Ctrl+Z">↩ Undo</button>
+      <button class="btn" id="redo-btn" title="Ctrl+Y">↪ Redo</button>
+    </div>
+
+    <!-- Grid -->
+    <div id="grid" class="grid"></div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="text-center py-16 text-slate-500 hidden">
+      <p class="text-lg mono">No buttons yet.</p>
+      <p class="text-sm text-slate-600">Click <span class="text-cyan-400">+ Add Button</span> to get started.</p>
+    </div>
+
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="border-t border-cyan-900/40 mt-10">
+    <div class="max-w-6xl mx-auto px-6 py-6">
+      <p class="mono text-xs text-center text-slate-500">© 2026 Script Hub · All systems nominal</p>
+    </div>
+  </footer>
+
+  <!-- ===== MODAL: Add/Edit ===== -->
+  <div id="modal" class="modal">
+    <div class="form" id="button-form-container">
+      <h2 id="form-title">Create New Button</h2>
+      <form id="button-form">
+        <input type="hidden" id="edit-id" name="editId">
+        
+        <label>Title <input type="text" name="title" placeholder="Button title" required></label>
+        
+        <label>URL / Text <input type="text" name="url" placeholder="https://... or QR text"></label>
+        
+        <label>Mode
+          <select name="mode">
+            <option value="url">URL Link</option>
+            <option value="qr">QR Code</option>
+          </select>
+        </label>
+        
+        <label>Icon (emoji) <input type="text" name="icon" placeholder="⚡"></label>
+        
+        <label>Background Type
+          <select name="bgType" id="bg-type-select">
+            <option value="color">Solid Color</option>
+            <option value="gradient">Gradient</option>
+            <option value="image">Image URL</option>
+          </select>
+        </label>
+        
+        <label>Color <input type="color" name="color" value="#1a1f2e"></label>
+        
+        <label>Gradient (CSS) <input type="text" name="gradient" placeholder="linear-gradient(...)"></label>
+        
+        <label>Background Image URL <input type="text" name="bgImage" placeholder="https://..."></label>
+        
+        <label>Opacity <input type="range" name="opacity" min="0.2" max="1" step="0.05" value="1"></label>
+        
+        <label>Tags <input type="text" name="tags" placeholder="work, personal, etc"></label>
+        
+        <div class="form__actions">
+          <button type="button" class="btn cancel" id="cancel-btn">Cancel</button>
+          <button type="submit" class="btn primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: QR Display ===== -->
+  <div id="qr-modal" class="modal">
+    <div class="form" style="min-width:auto; align-items:center;">
+      <h2 style="font-size:18px;">🔲 QR Code</h2>
+      <div id="qr-container"></div>
+      <button class="btn cancel" id="close-qr" style="margin-top:8px;">Close</button>
+    </div>
+  </div>
+
+  <!-- ===== JAVASCRIPT ===== -->
+  <script type="module">
+    import { generateQRCode } from './qr-generator.js';
+
+    // ========================================
+    // STATE
+    // ========================================
+    const STORAGE_KEY = 'my-website-buttons-v1';
+    const grid = document.getElementById('grid');
+    const addBtn = document.getElementById('add-btn');
+    const modal = document.getElementById('modal');
+    const form = document.getElementById('button-form');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const search = document.getElementById('search');
+    const exportBtn = document.getElementById('export-btn');
+    const importBtn = document.getElementById('import-btn');
+    const importFile = document.getElementById('import-file');
+    const qrModal = document.getElementById('qr-modal');
+    const qrContainer = document.getElementById('qr-container');
+    const closeQr = document.getElementById('close-qr');
+    const sizeSelect = document.getElementById('size-select');
+    const undoBtn = document.getElementById('undo-btn');
+    const redoBtn = document.getElementById('redo-btn');
+
+    let state = { items: [] };
+    let undoStack = [];
+    let redoStack = [];
+
+    function uid() {
+      return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    }
+
+    function saveState(pushUndo = true) {
+      if (pushUndo) undoStack.push(JSON.stringify(state));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      updateStats();
+    }
+
+    const debouncedSave = debounce(() => saveState(true), 500);
+
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        try { state = JSON.parse(raw); } catch(e) { state = { items: [] }; }
+      }
+      render();
+      updateStats();
+    }
+
+    // ========================================
+    // RENDER
+    // ========================================
+    function render() {
+      const filter = (search.value || '').toLowerCase();
+      const filtered = state.items.filter(item => {
+        if (!filter) return true;
+        return (item.title || '').toLowerCase().includes(filter) || 
+               (item.tags || '').toLowerCase().includes(filter);
+      });
+
+      grid.innerHTML = '';
+      
+      if (filtered.length === 0) {
+        document.getElementById('empty-state').classList.remove('hidden');
+      } else {
+        document.getElementById('empty-state').classList.add('hidden');
+      }
+
+      filtered.forEach(item => {
+        const el = document.createElement('div');
+        el.className = 'grid__item';
+        el.setAttribute('draggable', 'true');
+        el.dataset.id = item.id;
+
+        // Background
+        if (item.bgType === 'color' && item.color) {
+          el.style.background = item.color;
+        } else if (item.bgType === 'gradient' && item.gradient) {
+          el.style.background = item.gradient;
+        } else if (item.bgType === 'image' && item.bgImage) {
+          el.style.background = `url(${item.bgImage}) center/cover`;
+        } else {
+          el.style.background = '#1a1f2e';
+        }
+        el.style.opacity = item.opacity ?? 1;
+
+        const mode = item.mode === 'qr' ? '🔗 QR' : '🌐 URL';
+        const icon = item.icon || (item.mode === 'qr' ? '🔲' : '🔗');
+
+        el.innerHTML = `
+          <div style="width:100%; display:flex; align-items:center; gap:8px;">
+            <span style="font-size:20px;">${icon}</span>
+            <div>
+              <div class="title">${escapeHtml(item.title || 'Untitled')}</div>
+              <div class="muted">${mode}</div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn open" data-id="${item.id}">Open</button>
+            <button class="btn edit" data-id="${item.id}">Edit</button>
+            <button class="btn delete" data-id="${item.id}">Delete</button>
+          </div>
+        `;
+
+        // Events
+        el.querySelector('.open').addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (item.mode === 'qr') {
+            openQR(item);
+          } else {
+            if (item.url) window.open(item.url, '_blank');
+            else showToast('No URL set', false);
+          }
+        });
+
+        el.querySelector('.edit').addEventListener('click', (e) => {
+          e.stopPropagation();
+          openForm(item);
+        });
+
+        el.querySelector('.delete').addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (confirm(`Delete "${item.title}"?`)) {
+            state.items = state.items.filter(i => i.id !== item.id);
+            debouncedSave();
+            render();
+            showToast(`Deleted "${item.title}"`, true);
+          }
+        });
+
+        // Drag
+        el.addEventListener('dragstart', e => {
+          el.classList.add('dragging');
+          e.dataTransfer.setData('text/plain', item.id);
+        });
+        el.addEventListener('dragend', e => {
+          el.classList.remove('dragging');
+        });
+
+        grid.appendChild(el);
+      });
+    }
+
+    // ========================================
+    // DRAG & DROP REORDER
+    // ========================================
+    grid.addEventListener('dragover', e => {
+      e.preventDefault();
+      const after = getDragAfterElement(grid, e.clientY);
+      const dragging = document.querySelector('.dragging');
+      if (!dragging) return;
+      if (after == null) grid.appendChild(dragging);
+      else grid.insertBefore(dragging, after);
+    });
+
+    grid.addEventListener('drop', e => {
+      e.preventDefault();
+      const children = Array.from(grid.querySelectorAll('.grid__item:not(.dragging)')).map(c => c.dataset.id);
+      const draggedId = e.dataTransfer.getData('text/plain');
+      // Rebuild order
+      const ordered = [];
+      const draggedItem = state.items.find(i => i.id === draggedId);
+      if (!draggedItem) return;
+      
+      // Get items in current visual order
+      const visualIds = [];
+      grid.querySelectorAll('.grid__item').forEach(el => visualIds.push(el.dataset.id));
+      
+      state.items = visualIds.map(id => state.items.find(i => i.id === id)).filter(Boolean);
+      debouncedSave();
+      render();
+    });
+
+    function getDragAfterElement(container, y) {
+      const draggableElements = [...container.querySelectorAll('.grid__item:not(.dragging)')];
+      return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+          return { offset, element: child };
+        } else {
+          return closest;
+        }
+      }, { offset: -Infinity }).element;
+    }
+
+    // ========================================
+    // FORM
+    // ========================================
+    function openForm(item = null) {
+      if (item) {
+        document.getElementById('form-title').textContent = '✏️ Edit Button';
+        document.getElementById('edit-id').value = item.id;
+        form.elements.title.value = item.title || '';
+        form.elements.url.value = item.url || '';
+        form.elements.mode.value = item.mode || 'url';
+        form.elements.icon.value = item.icon || '';
+        form.elements.bgType.value = item.bgType || 'color';
+        form.elements.color.value = item.color || '#1a1f2e';
+        form.elements.gradient.value = item.gradient || '';
+        form.elements.bgImage.value = item.bgImage || '';
+        form.elements.opacity.value = item.opacity ?? 1;
+        form.elements.tags.value = item.tags || '';
+      } else {
+        document.getElementById('form-title').textContent = '➕ Create New Button';
+        document.getElementById('edit-id').value = '';
+        form.reset();
+        form.elements.color.value = '#1a1f2e';
+        form.elements.opacity.value = 1;
+        form.elements.mode.value = 'url';
+        form.elements.bgType.value = 'color';
+      }
+      modal.classList.add('active');
+    }
+
+    function closeForm() {
+      modal.classList.remove('active');
+    }
+
+    addBtn.addEventListener('click', () => openForm());
+    cancelBtn.addEventListener('click', closeForm);
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const data = new FormData(form);
+      const editId = document.getElementById('edit-id').value;
+      
+      const item = {
+        id: editId || uid(),
+        title: data.get('title') || 'Untitled',
+        url: data.get('url') || '',
+        mode: data.get('mode') || 'url',
+        icon: data.get('icon') || '',
+        bgType: data.get('bgType') || 'color',
+        color: data.get('color') || '#1a1f2e',
+        gradient: data.get('gradient') || '',
+        bgImage: data.get('bgImage') || '',
+        opacity: parseFloat(data.get('opacity') || 1),
+        tags: data.get('tags') || ''
+      };
+
+      if (editId) {
+        const idx = state.items.findIndex(i => i.id === editId);
+        if (idx >= 0) state.items[idx] = item;
+        showToast(`Updated "${item.title}"`, true);
+      } else {
+        state.items.unshift(item);
+        showToast(`Created "${item.title}"`, true);
+      }
+
+      debouncedSave();
+      closeForm();
+      render();
+    });
+
+    // ========================================
+    // QR
+    // ========================================
+    function openQR(item) {
+      qrModal.classList.add('active');
+      qrContainer.innerHTML = '';
+      const text = item.url || item.title || 'QR Code';
+      try {
+        generateQRCode(qrContainer, text, { size: 240 });
+      } catch (e) {
+        qrContainer.innerHTML = `<p class="text-red-400">Error generating QR: ${e.message}</p>`;
+      }
+    }
+
+    closeQr.addEventListener('click', () => {
+      qrModal.classList.remove('active');
+      qrContainer.innerHTML = '';
+    });
+
+    // Close modals on backdrop click
+    document.querySelectorAll('.modal').forEach(m => {
+      m.addEventListener('click', e => {
+        if (e.target === m) {
+          m.classList.remove('active');
+          if (m.id === 'qr-modal') qrContainer.innerHTML = '';
+        }
+      });
+    });
+
+    // ========================================
+    // EXPORT / IMPORT
+    // ========================================
+    exportBtn.addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `buttons-${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Exported successfully ✅', true);
+    });
+
+    importBtn.addEventListener('click', () => importFile.click());
+    importFile.addEventListener('change', e => {
+      const f = e.target.files[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          if (data.items) {
+            state = data;
+            saveState(true);
+            render();
+            showToast(`Imported ${state.items.length} buttons ✅`, true);
+          } else {
+            showToast('Invalid format: missing "items" array', false);
+          }
+        } catch (err) {
+          showToast('Invalid JSON file', false);
+        }
+      };
+      reader.readAsText(f);
+      importFile.value = '';
+    });
+
+    // ========================================
+    // SEARCH
+    // ========================================
+    search.addEventListener('input', () => render());
+
+    // ========================================
+    // SIZE
+    // ========================================
+    sizeSelect.addEventListener('change', () => {
+      grid.classList.toggle('grid--small', sizeSelect.value === 'small');
+      grid.classList.toggle('grid--large', sizeSelect.value === 'large');
+    });
+
+    // ========================================
+    // UNDO / REDO
+    // ========================================
+    undoBtn.addEventListener('click', undo);
+    redoBtn.addEventListener('click', redo);
+
+    function undo() {
+      if (undoStack.length === 0) { showToast('Nothing to undo', false); return; }
+      redoStack.push(JSON.stringify(state));
+      state = JSON.parse(undoStack.pop());
+      saveState(false);
+      render();
+      showToast('↩ Undo', true);
+    }
+
+    function redo() {
+      if (redoStack
