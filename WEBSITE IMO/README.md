@@ -1,43 +1,69 @@
-# Button Dashboard
+# Script Hub - Intergrasi Medan Operasi (IMO)
 
-Small single-page app to create and manage customizable buttons that link to URLs or show QR codes.
+A modern, responsive web dashboard for managing automated recovery and movement control systems.
 
-Quick start
+## ✨ Features
 
-1. Install (optional dependencies):
+- ⚡ **Dynamic Dashboard** - Create and manage customizable buttons
+- 🔲 **QR Code Generator** - Generate QR codes for quick access
+- 📊 **Google Apps Integration** - Connect to Google Sheets for data automation
+- 📱 **Responsive Design** - Works on desktop, tablet, and mobile devices
+- 🎨 **Modern UI** - Sleek terminal-inspired interface with smooth animations
+- 🌐 **Offline Capable** - Progressive Web App with service worker support
 
+## 🚀 Getting Started
+
+### Easiest Way - Use Directly
+Just open `index.html` in your browser. No installation needed!
+
+### With Local Server
 ```bash
 npm install
+npm start
 ```
+Then visit `http://localhost:8080`
 
-2. Start development server (Live Server recommended):
+## 📚 File Structure
 
-```bash
-npx live-server
-```
+| File | Purpose |
+|------|---------|
+| `index.html` | Main application interface |
+| `manifest.json` | PWA (install as app) configuration |
+| `service-worker.js` | Enables offline functionality |
+| `css/style.css` | Additional custom styles |
+| `js/main.js` | Core application logic |
+| `js/qr-generator.js` | QR code generation functionality |
 
-Features
+## 🔗 Integrated Services
 
-- Add unlimited buttons with title, URL/text, icon, background (color/gradient/image), opacity, tags
-- Drag & drop reordering
-- QR code generation (uses QRCode.js)
-- Export/Import JSON
-- Auto-save to `localStorage`
-- Dark/Light theme, keyboard shortcuts (Ctrl+S save, Ctrl+Z undo, Ctrl+Y redo)
-- PWA manifest and service worker (basic)
+This dashboard connects to Google Apps Scripts for automation:
+- **Atur gerak kembalik** - Recovery and movement control system
+- Additional custom operations
 
-Deployment
+## 📱 Install as App
 
-This is a static site. Deploy to GitHub Pages, Netlify, or Vercel by pushing the folder and pointing to `index.html`.
+1. Open this site in Chrome or Edge
+2. Click the address bar menu → **"Install app"**
+3. Or on mobile: tap **"Add to Home Screen"**
+4. Launch directly from your home screen!
 
-User manual
+## 🌍 Browser Support
 
-- Click `Add Button` to create a new button.
-- Use `Open` to follow the URL or `QR` to view the QR code.
-- Use `Export` to download JSON, and `Import` to load it back.
-- Search filters by title or tags.
+- ✅ Chrome/Chromium (recommended)
+- ✅ Firefox
+- ✅ Safari
+- ✅ Edge
+- ✅ Mobile browsers
 
-Notes
+## 🛠️ Built With
 
-- Data is stored in `localStorage` under key `my-website-buttons-v1`.
-- Shareable links are supported by encoding state in the URL hash.
+- HTML5
+- Tailwind CSS (CDN)
+- Vanilla JavaScript
+- Lucide Icons (SVG)
+
+---
+
+**Status:** 🟢 Systems Online
+
+Design by Kursus PJK siri 17 2026 Cawangan Pengurusan Kejuruteraan dan Ketenteraan
