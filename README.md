@@ -1,291 +1,276 @@
-Script Hub - INTERGRASI_MEDAN_OPERASI://
-📋 Overview
-A dynamic operations dashboard for managing tactical buttons, QR codes, and operational links. Built for the Kursus PJK siri 17 2026 at Cawangan Pengurusan Kejuruteraan dan Ketenteraan.
-
-Live Demo: GitHub Pages URL
-
-🚀 Features
-Core Functionality
-Button Management: Create, edit, delete, and reorder buttons with drag & drop
-
-Dual Mode: Each button can be a URL link or QR code generator
-
-Rich Customization: Background colors, gradients, images, opacity, icons
-
-QR Generation: Built-in QR code generator using QRCode.js
-
-Search & Filter: Quick search by title or tags
-
-Statistics Dashboard: Real-time counts of total buttons, URLs, and QR codes
-
-Data Management
-Local Storage: Auto-saves to browser localStorage
-
-Export/Import: JSON export/import for backup and sharing
-
-Undo/Redo: Full undo/redo support (Ctrl+Z / Ctrl+Y)
-
-Save Shortcut: Ctrl+S to manually save state
-
-UI/UX
-Dark Theme: Tactical dark interface with cyan accent (#00ffc8)
-
-Responsive: Works on desktop, tablet, and mobile
-
-Keyboard Shortcuts: Full keyboard navigation support
-
-Toast Notifications: Real-time feedback for all actions
-
-📦 Installation
-Option 1: GitHub Pages (Recommended)
-Fork this repository
-
-Enable GitHub Pages in repository settings
-
-Access via https://yourusername.github.io/script-hub/
-
-Option 2: Local Development
-bash
-# Clone the repository
-git clone https://github.com/yourusername/script-hub.git
-
-# Navigate to directory
-cd script-hub
-
-# Install dependencies (optional)
-npm install
-
-# Start live server
-npx live-server
-Option 3: Google Apps Script Deployment
-Create a new Google Apps Script project
-
-Deploy as a web app
-
-Copy all HTML/CSS/JS into the script editor
-
-🛠️ Technology Stack
-Technology	Purpose
-HTML5	Structure
-CSS3 + Tailwind	Styling
-Vanilla JS (ES Modules)	Logic
-QRCode.js	QR generation
-Lucide Icons	Icon library
-Google Fonts (Fira Sans, Space Mono)	Typography
-LocalStorage API	Data persistence
-📁 File Structure
-text
-script-hub/
-├── index.html          # Main application
-├── qr-generator.js     # QR code module
-├── manifest.json       # PWA manifest
-├── service-worker.js   # Service worker for offline
-├── package.json        # NPM dependencies
-├── README.md           # This file
-└── assets/             # Images and icons
-    ├── images/
-    │   ├── icon-192.png
-    │   └── icon-512.png
-    └── ...
-🎮 Usage Guide
-Adding a Button
-Click "+ Add Button"
-
-Fill in:
-
-Title: Display name
-
-URL/Text: Link or QR content
-
-Mode: URL or QR
-
-Icon: Emoji (optional)
-
-Background: Color, gradient, or image
-
-Opacity: 0.2 - 1.0
-
-Tags: Search keywords
-
-Click "Save"
-
-Managing Buttons
-Open: Click to open URL or display QR
-
-Edit: Modify button properties
-
-Delete: Remove button (with confirmation)
-
-Drag & Drop: Reorder by dragging cards
-
-Keyboard Shortcuts
-Shortcut	Action
-Ctrl+S	Save state
-Ctrl+Z	Undo
-Ctrl+Y	Redo
-Esc	Close modal
-Data Operations
-Export: Downloads buttons-YYYY-MM-DD.json
-
-Import: Upload previously exported JSON
-
-Search: Filters by title or tags
-
-🔧 Configuration
-Changing Colors
-Edit CSS variables in index.html:
-
-css
-:root {
-  --border: #00ffc8;     /* Accent color */
-  --bg: #0a0f1a;         /* Background */
-  --card: #1a1f2e;       /* Card background */
-  --text: #e2e8f0;       /* Text color */
-  --muted: #94a3b8;      /* Muted text */
-}
-Storage Key
-Data stored in localStorage under:
-
-javascript
-const STORAGE_KEY = 'my-website-buttons-v1';
-📱 Mobile Support
-Fully responsive grid layout
-
-Touch-friendly drag & drop
-
-Optimized form inputs for mobile
-
-Adaptive toolbar layout
-
-🚦 Deployment
-GitHub Pages
-bash
-# Push to main branch
-git push origin main
-
-# Enable Pages in Settings > Pages
-# Select "main" branch and "/" root
-Netlify/Vercel
-Connect repository
-
-Auto-deploy on push
-
-Custom domain support
-
-Google Apps Script
-Open script.google.com
-
-Create new project
-
-Paste HTML as Index.html
-
-Deploy as web app
-
-Set access to "Anyone" or "Organization"
-
-🤝 Contributing
-Fork the repository
-
-Create feature branch (git checkout -b feature/amazing)
-
-Commit changes (git commit -m 'Add amazing feature')
-
-Push to branch (git push origin feature/amazing)
-
-Open Pull Request
-
-📄 License
-MIT License - Free for personal and commercial use.
-
-🙏 Credits
-Design: Kursus PJK siri 17 2026, Cawangan Pengurusan Kejuruteraan dan Ketenteraan
-
-Images: Pexels (stock photos)
-
-Icons: Lucide
-
-QR Library: QRCode.js
-
-🐛 Troubleshooting
-Buttons not saving?
-Check browser localStorage permissions
-
-Try Ctrl+S to force save
-
-Check console for errors
-
-QR Code not displaying?
-Ensure QRCode.js loads correctly
-
-Check URL/text is valid
-
-Try using https:// protocol
-
-Drag & Drop not working?
-Disable browser extensions
-
-Try desktop browser
-
-Check touch support on mobile
-
-📊 API Reference
-State Object
-javascript
-{
-  items: [
-    {
-      id: "unique-id",
-      title: "Button Title",
-      url: "https://example.com",
-      mode: "url", // or "qr"
-      icon: "⚡",
-      bgType: "color", // "gradient" | "image"
-      color: "#1a1f2e",
-      gradient: "linear-gradient(...)",
-      bgImage: "https://...",
-      opacity: 1,
-      tags: "work, tactical"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Script Hub</title>
+  <!-- Favicon as inline SVG data URI -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <style>
+    body { font-family: 'Fira Sans', sans-serif; background: #0a0f1a; }
+    .mono { font-family: 'Space Mono', monospace; }
+    .card-glow { transition: box-shadow 0.25s, transform 0.2s; }
+    .card-glow:hover { box-shadow: 0 0 28px rgba(0,255,200,0.25); transform: translateY(-4px); }
+    .grid-lines {
+      background-image: linear-gradient(rgba(0,255,200,0.04) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(0,255,200,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
     }
-  ]
-}
-Functions
-javascript
-// Create button
-addButton(itemData)
+    .pulse-dot { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{ opacity:0.3; } 50%{ opacity:1; } }
+    .clock-ring { filter: drop-shadow(0 0 8px rgba(0,255,200,0.2)); }
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #0f172a;
+      border: 1px solid #00ffc8;
+      padding: 12px 20px;
+      border-radius: 8px;
+      color: #e2e8f0;
+      z-index: 1000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+      max-width: 400px;
+      word-wrap: break-word;
+    }
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    /* Loading spinner */
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #00ffc8;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="min-h-screen grid-lines text-slate-200">
 
-// Update button
-updateButton(id, updatedData)
+  <!-- Toast notification -->
+  <div id="toast" class="toast"></div>
 
-// Delete button
-deleteButton(id)
+  <!-- HEADER -->
+  <header class="border-b border-cyan-900/40 relative overflow-hidden">
+    <img class="absolute inset-0 w-full h-full object-cover opacity-30" loading="lazy" 
+         src="https://images.pexels.com/photos/10885044/pexels-photo-10885044.jpeg?auto=compress&cs=tinysrgb&w=1280" 
+         alt="patriotic backdrop">
+    <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-slate-950/60"></div>
+    <div class="max-w-6xl mx-auto px-6 py-8 relative z-10">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-3 h-3 rounded-full bg-emerald-400 pulse-dot"></div>
+        <span class="mono text-xs text-emerald-400 uppercase tracking-widest">systems online</span>
+      </div>
+      <h1 class="mono text-3xl font-bold text-cyan-400" style="color: #00ffc8;">INTERGRASI_MEDAN_OPERASI://</h1>
+      <p class="mt-2 max-w-2xl text-slate-400 text-base">Design by Kursus PJK siri 17 2026 Cawangan Pengurusan Kejuruteraan dan Ketenteraan</p>
+    </div>
+  </header>
 
-// Export data
-exportData()
+  <!-- MAIN CARDS -->
+  <main class="max-w-6xl mx-auto px-6 py-10">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-// Import data
-importData(jsonData)
-🔜 Roadmap
-Firebase/Cloud sync
+      <!-- CARD 1: Atur gerak kembalik -->
+      <div class="card-glow rounded-xl p-6 border border-cyan-800/30 bg-slate-900/80 backdrop-blur-sm">
+        <img class="w-full h-32 object-contain mb-3 rounded-md" loading="lazy" 
+             src="https://images.pexels.com/photos/19772670/pexels-photo-19772670.jpeg?auto=compress&cs=tinysrgb&w=800" 
+             alt="recovery truck">
+        <div class="flex items-center gap-2 mb-3">
+          <h3 class="mono text-xl font-bold text-slate-200">Atur gerak kembalik</h3>
+        </div>
+        <p class="text-sm text-slate-400 mb-4">Automated recovery and movement control system for efficient operations.</p>
+        <a href="https://script.google.com/macros/s/AKfycbxC6VLoLdaC0gfh5y9oj6UjQtwQTNn3qjRlpMHNdXWaGO_6wOHge_CMeoh9OV-8aVpT/exec" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           class="mono text-cyan-400 inline-flex items-center gap-1 hover:underline">LAUNCH →</a>
+      </div>
 
-User authentication
+      <!-- CARD 2: Kumpulan Pembaikan Hadapan -->
+      <div class="card-glow rounded-xl p-6 border border-cyan-800/30 bg-slate-900/80 backdrop-blur-sm">
+        <img class="w-full h-32 object-contain mb-3 rounded-md" loading="lazy" 
+             src="https://images.pexels.com/photos/11452326/pexels-photo-11452326.jpeg?auto=compress&cs=tinysrgb&w=800" 
+             alt="soldiers sunset">
+        <div class="flex items-center gap-2 mb-3">
+          <h3 class="mono text-xl font-bold text-slate-200">Kumpulan Pembaikan Hadapan</h3>
+        </div>
+        <p class="text-sm text-slate-400 mb-4">Coordinated deployment and tactical operations management system.</p>
+        <a href="https://script.google.com/macros/s/AKfycbwt_R_KI0AeNX4ykpT0gYWbCocmIjBvOcja4twu-aB7LMr7mbBnt1RSuZSsi0CET7lO/exec" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           class="mono text-cyan-400 inline-flex items-center gap-1 hover:underline">LAUNCH →</a>
+      </div>
 
-Multiple workspaces
+      <!-- CARD 3: Tactical Map -->
+      <div class="card-glow rounded-xl p-6 border border-cyan-800/30 bg-slate-900/80 backdrop-blur-sm">
+        <div class="flex items-center gap-2 mb-3">
+          <i data-lucide="map" class="w-5 h-5 text-emerald-400"></i>
+          <h3 class="mono text-xl font-bold text-slate-200">Tactical Map</h3>
+        </div>
+        <p class="text-sm text-slate-400 mb-4">Tactical mapping and strategic positioning system.</p>
+        <a href="#" class="mono text-cyan-400 inline-flex items-center gap-1 hover:underline" 
+           onclick="event.preventDefault(); launchModule('Tactical Map');">LAUNCH →</a>
+      </div>
 
-QR code scanning
+      <!-- CARD 4: Round Watch (Clock) -->
+      <div class="card-glow rounded-xl p-6 border border-cyan-800/30 bg-slate-900/80 backdrop-blur-sm flex flex-col items-center justify-center">
+        <h3 class="mono text-xl font-bold text-slate-200 mb-3">Round Watch</h3>
+        <svg class="w-24 h-24 mb-3 clock-ring" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="48" fill="none" stroke="#1e293b" stroke-width="2"></circle>
+          <circle cx="50" cy="50" r="45" fill="none" stroke="#0f172a" stroke-width="1"></circle>
+          <circle cx="50" cy="50" r="3" fill="#00ffc8"></circle>
+          <g stroke="#00ffc8" stroke-width="1.5" opacity="0.5">
+            <line x1="50" y1="6" x2="50" y2="12"></line>
+            <line x1="50" y1="88" x2="50" y2="94"></line>
+            <line x1="6" y1="50" x2="12" y2="50"></line>
+            <line x1="88" y1="50" x2="94" y2="50"></line>
+          </g>
+          <line id="hour-hand" x1="50" y1="50" x2="50" y2="30" stroke="#00ffc8" stroke-width="2.5" stroke-linecap="round" style="transform-origin: 50px 50px; transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);"></line>
+          <line id="minute-hand" x1="50" y1="50" x2="50" y2="18" stroke="#00ffc8" stroke-width="1.8" stroke-linecap="round" style="transform-origin: 50px 50px; transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);"></line>
+          <line id="second-hand" x1="50" y1="50" x2="50" y2="15" stroke="#10b981" stroke-width="1.2" stroke-linecap="round" style="transform-origin: 50px 50px; transition: transform 0.05s linear;"></line>
+        </svg>
+        <p class="text-sm text-slate-400 text-center">Live analog clock · real-time</p>
+      </div>
 
-Analytics dashboard
+      <!-- CARD 5: Report 1 -->
+      <div class="card-glow rounded-xl p-6 border border-cyan-800/30 bg-slate-900/80 backdrop-blur-sm">
+        <div class="flex items-center gap-2 mb-3">
+          <i data-lucide="file-text" class="w-5 h-5 text-emerald-400"></i>
+          <h3 class="mono text-xl font-bold text-slate-200">Report 1</h3>
+        </div>
+        <p class="text-sm text-slate-400 mb-4">Operations report compilation and analysis.</p>
+        <a href="https://docs.google.com/spreadsheets/d/1EQNUaYmT6-K5ks9dUiMLJTdoIFrasnLojApTHlbjmtM/edit?usp=sharing" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           class="mono text-cyan-400 inline-flex items-center gap-1 hover:underline">LAUNCH →</a>
+      </div>
 
-Export to PDF/CSV
+      <!-- CARD 6: Report 2 -->
+      <div class="card-glow rounded-xl p-6 border border-cyan-800/30 bg-slate-900/80 backdrop-blur-sm">
+        <div class="flex items-center gap-2 mb-3">
+          <i data-lucide="file-text" class="w-5 h-5 text-emerald-400"></i>
+          <h3 class="mono text-xl font-bold text-slate-200">Report 2</h3>
+        </div>
+        <p class="text-sm text-slate-400 mb-4">Real-time operational status monitoring.</p>
+        <a href="https://docs.google.com/spreadsheets/d/1vFHIC4fLUWDvUZQQBXG5oQyVtMPqYdXEOKsmw3f6Wy0/edit?usp=sharing" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           class="mono text-cyan-400 inline-flex items-center gap-1 hover:underline">LAUNCH →</a>
+      </div>
 
-Custom themes
+    </div>
+  </main>
 
-Chrome extension
+  <!-- FOOTER -->
+  <footer class="border-t border-cyan-900/40 mt-10">
+    <div class="max-w-6xl mx-auto px-6 py-6">
+      <p class="mono text-xs text-center text-slate-500">© 2026 Script Hub · All systems nominal</p>
+    </div>
+  </footer>
 
-📧 Support
-Issues: GitHub Issues
+  <!-- JavaScript -->
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
 
-Email: support@script-hub.com
+    // ----- ANALOG CLOCK -----
+    function updateClock() {
+      const now = new Date();
+      const hours = now.getHours() % 12;
+      const minutes = now.getMinutes();
+      const seconds = now.getSeconds();
+      const ms = now.getMilliseconds();
 
-Documentation: Wiki
+      const hourDeg = (hours * 30) + (minutes * 0.5) + (seconds * 0.5 / 60);
+      const minuteDeg = (minutes * 6) + (seconds * 0.1) + (ms * 0.1 / 1000);
+      const secondDeg = (seconds * 6) + (ms * 0.006);
 
-Made with ❤️ for the Kursus PJK siri 17 2026
+      const hh = document.getElementById('hour-hand');
+      const mh = document.getElementById('minute-hand');
+      const sh = document.getElementById('second-hand');
+
+      if (hh) hh.style.transform = `rotate(${hourDeg}deg)`;
+      if (mh) mh.style.transform = `rotate(${minuteDeg}deg)`;
+      if (sh) sh.style.transform = `rotate(${secondDeg}deg)`;
+    }
+
+    updateClock();
+    setInterval(updateClock, 50);
+
+    // ----- TOAST NOTIFICATION -----
+    let toastTimeout;
+
+    function showToast(message, isSuccess = true, isLoading = false) {
+      const toast = document.getElementById('toast');
+      
+      if (isLoading) {
+        toast.innerHTML = `<span class="spinner"></span> ${message}`;
+      } else {
+        toast.textContent = message;
+      }
+      
+      toast.style.borderColor = isSuccess ? '#00ffc8' : '#ef4444';
+      toast.classList.add('show');
+      
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 4000);
+    }
+
+    // ----- GAS INTEGRATION: Launch Module (for Tactical Map) -----
+    function launchModule(moduleName) {
+      showToast(`Launching ${moduleName}...`, true, true);
+      
+      // Check if google.script.run is available
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(response) {
+            if (response.success) {
+              showToast(`✅ ${response.message}`, true);
+            } else {
+              showToast(`❌ ${response.message}`, false);
+            }
+          })
+          .withFailureHandler(function(error) {
+            showToast(`❌ Error: ${error.message || 'Unknown error'}`, false);
+            console.error('GAS Error:', error);
+          })
+          .launchModule(moduleName);
+      } else {
+        // Fallback for local testing or when GAS API isn't available
+        console.warn('Google Apps Script API not available - running in standalone mode');
+        setTimeout(() => {
+          showToast(`🚀 [DEMO] Launched ${moduleName}`, true);
+        }, 1500);
+      }
+    }
+
+    // Handle direct links with toast notifications for external links
+    document.querySelectorAll('a[target="_blank"]').forEach(link => {
+      link.addEventListener('click', function(e) {
+        const moduleName = this.closest('.card-glow')?.querySelector('h3')?.textContent || 'Module';
+        showToast(`🚀 Opening ${moduleName}...`, true);
+      });
+    });
+
+    console.log('Script Hub ready · Google Apps Script deployment');
+  </script>
+</body>
+</html>
